@@ -1,6 +1,8 @@
 FROM php:8.4-fpm
 
 ARG INSTALL_XDEBUG=false
+ARG REDIS_VERSION=6.2.0
+ARG XDEBUG_VERSION=3.4.5
 
 RUN apt-get update && apt-get install -y \
     git \
@@ -36,10 +38,27 @@ RUN apt-get update && apt-get install -y \
         pcntl \
         soap \
         zip \
-    && pecl install redis \
+    && curl -fsSL "https://github.com/phpredis/phpredis/archive/refs/tags/${REDIS_VERSION}.tar.gz" -o /tmp/redis.tgz \
+    && mkdir -p /tmp/redis \
+    && tar -xzf /tmp/redis.tgz -C /tmp/redis --strip-components=1 \
+    && cd /tmp/redis \
+    && phpize \
+    && ./configure \
+    && make -j"$(nproc)" \
+    && make install \
     && docker-php-ext-enable redis \
+    && rm -rf /tmp/redis /tmp/redis.tgz \
     && if [ "$INSTALL_XDEBUG" = "true" ]; then \
-        pecl install xdebug && docker-php-ext-enable xdebug ; \
+        curl -fsSL "https://github.com/xdebug/xdebug/archive/refs/tags/${XDEBUG_VERSION}.tar.gz" -o /tmp/xdebug.tgz \
+        && mkdir -p /tmp/xdebug \
+        && tar -xzf /tmp/xdebug.tgz -C /tmp/xdebug --strip-components=1 \
+        && cd /tmp/xdebug \
+        && phpize \
+        && ./configure \
+        && make -j"$(nproc)" \
+        && make install \
+        && docker-php-ext-enable xdebug \
+        && rm -rf /tmp/xdebug /tmp/xdebug.tgz ; \
     fi \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*

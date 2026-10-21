@@ -85,7 +85,7 @@ tests/Unit/MoneyTest.php
 | vendedor | Clientes, cotizaciones y alta de pedidos |
 | facturacion | Ver clientes y cotizaciones. Operar pedidos, entregas y su seguimiento |
 
-El panel `/users` y `/roles` asigna el rol y permisos directos. `users.role` guarda el rol principal, también si se creó en el panel. `PermissionSeeder` restaura los cuatro roles de sistema y no borra los demás. El acceso local del dueño es el nickname `superadmin`, con la misma contraseña que `admin`. El seeder no reescribe una contraseña ya guardada.
+El panel `/users` y `/roles` asigna el rol y permisos directos. `users.role` guarda el rol principal, también si se creó en el panel. `PermissionSeeder` restaura los cuatro roles de sistema y no borra los demás. El acceso local del dueño es el nickname `superadmin`, con la misma contraseña que `admin`. El seeder no reescribe una contraseña ya guardada. Ese usuario no aparece en `/users` y nadie puede editarlo ni eliminarlo.
 
 ## Glosario
 

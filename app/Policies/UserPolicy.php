@@ -16,6 +16,10 @@ class UserPolicy
 
     public function view(User $user, User $model): bool
     {
+        if ($model->isOwner()) {
+            return false;
+        }
+
         return $user->hasPermission(Permission::UsersView);
     }
 
@@ -26,11 +30,19 @@ class UserPolicy
 
     public function update(User $user, User $model): bool
     {
+        if ($model->isOwner()) {
+            return false;
+        }
+
         return $user->hasPermission(Permission::UsersUpdate);
     }
 
     public function delete(User $user, User $model): bool
     {
+        if ($model->isOwner()) {
+            return false;
+        }
+
         return $user->hasPermission(Permission::UsersDelete);
     }
 }

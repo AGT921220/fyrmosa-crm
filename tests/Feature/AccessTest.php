@@ -122,6 +122,33 @@ class AccessTest extends TestCase
         $this->assertFalse($ana->hasRole('almacen'));
     }
 
+    public function test_owner_is_hidden_and_cannot_be_changed_or_deleted(): void
+    {
+        $this->seed(DatabaseSeeder::class);
+        $actor = $this->userWithRole(Role::SuperAdmin);
+        $owner = User::query()->where('nickname', 'superadmin')->firstOrFail();
+
+        $this->actingAs($actor)
+            ->get(route('users.index'))
+            ->assertOk()
+            ->assertDontSee($owner->email)
+            ->assertDontSee('>'.$owner->nickname.'<', false);
+
+        $this->actingAs($actor)->get(route('users.edit', $owner))->assertNotFound();
+        $this->actingAs($actor)->put(route('users.update', $owner), [
+            'name' => 'Hackeado',
+            'nickname' => 'superadmin',
+            'email' => $owner->email,
+            'role' => Role::Admin->value,
+        ])->assertNotFound();
+        $this->actingAs($actor)->delete(route('users.destroy', $owner))->assertNotFound();
+
+        $owner->refresh();
+        $this->assertSame('Superadmin', $owner->name);
+        $this->assertSame(Role::SuperAdmin->value, $owner->role);
+        $this->assertDatabaseHas('users', ['nickname' => 'superadmin']);
+    }
+
     public function test_seeder_creates_the_owner_without_rewriting_passwords(): void
     {
         $admin = User::factory()->create([

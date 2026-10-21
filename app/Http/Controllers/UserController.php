@@ -20,7 +20,7 @@ class UserController extends Controller
         $this->authorize('viewAny', User::class);
 
         return view('users.index', [
-            'users' => User::query()->orderBy('name')->paginate(15),
+            'users' => User::query()->withoutOwner()->orderBy('name')->paginate(15),
         ]);
     }
 
@@ -42,6 +42,7 @@ class UserController extends Controller
 
     public function edit(User $user): View
     {
+        abort_if($user->isOwner(), 404);
         $this->authorize('update', $user);
 
         return view('users.edit', [
@@ -53,6 +54,7 @@ class UserController extends Controller
 
     public function update(UpdateUserRequest $request, User $user, SaveUser $save): RedirectResponse
     {
+        abort_if($user->isOwner(), 404);
         $save($user, $request->validated());
 
         return redirect()->route('users.index')->with('success', 'Usuario actualizado.');
@@ -60,6 +62,7 @@ class UserController extends Controller
 
     public function destroy(User $user, DeleteUser $delete): RedirectResponse
     {
+        abort_if($user->isOwner(), 404);
         $this->authorize('delete', $user);
         $delete($user, $this->currentUser());
 

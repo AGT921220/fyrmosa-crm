@@ -15,7 +15,13 @@ class UpdateUserRequest extends FormRequest
     {
         $user = $this->route('user');
 
-        return $user instanceof User && $this->user()->can('update', $user);
+        if (! $user instanceof User) {
+            return false;
+        }
+
+        abort_if($user->isOwner(), 404);
+
+        return $this->user()->can('update', $user);
     }
 
     /**

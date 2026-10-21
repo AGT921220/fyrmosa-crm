@@ -18,6 +18,11 @@ final class SaveUser
     {
         return DB::transaction(function () use ($user, $data): User {
             $user ??= new User;
+
+            if ($user->exists && $user->isOwner()) {
+                throw new CrmRuleException('Este usuario no se puede modificar.');
+            }
+
             $previous = $user->exists ? (string) $user->getRawOriginal('role') : null;
             $next = (string) $data['role'];
 

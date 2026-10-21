@@ -12,6 +12,10 @@ final class DeleteUser
 {
     public function __invoke(User $user, User $actor): void
     {
+        if ($user->isOwner()) {
+            throw new CrmRuleException('Este usuario no se puede eliminar.');
+        }
+
         if ($user->is($actor)) {
             throw new CrmRuleException('No puedes eliminar tu propio usuario.');
         }

@@ -15,13 +15,13 @@ server-enter:
 
 install:
 	echo "Docker Exec";\
-	docker exec -it php-crm composer install
+	docker exec -it php-fyrmosa composer install
 enter:
-	docker exec -it php-crm /bin/bash;
+	docker exec -it php-fyrmosa /bin/bash;
 nginx:
-	docker exec -it nginx-crm /bin/sh;	
+	docker exec -it nginx-fyrmosa /bin/sh;	
 clear:
-	@docker exec -it php-crm /bin/bash -c \
+	@docker exec -it php-fyrmosa /bin/bash -c \
 	"php artisan optimize:clear && \
 	php artisan config:cache && \
 	php artisan route:cache && \
@@ -30,7 +30,7 @@ clear:
 ngrok:
 	@ngrok http --host-header=rewrite http://localhost:8080;
 demo/restart-data:
-	@docker exec -it php-crm /bin/bash -c \
+	@docker exec -it php-fyrmosa /bin/bash -c \
 	"php artisan migrate:fresh && php artisan permissions:create && php artisan roles:create && php artisan users:create-demo && php artisan drivers:sync-from-chofer-users && php artisan demo:create-data"
 # 	@php artisan migrate
 # 	@php artisan permissions:create
@@ -46,4 +46,4 @@ db-export:
 	@docker exec -i ${DB_HOST} mysqldump -u ${DB_USERNAME} -p${DB_PASSWORD} --no-tablespaces ${DB_DATABASE} > storage/app/gan.sql
 
 update-bulk-passwords:
-	@docker exec -i php-crm php artisan users:update-bulk-passwords --force
+	@docker exec -i php-fyrmosa php artisan users:update-bulk-passwords --force

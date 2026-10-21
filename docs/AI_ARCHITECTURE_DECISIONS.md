@@ -22,7 +22,7 @@ Cambios de estado, precios, condiciones, seguimientos, versiones y entregas se a
 
 ## ADR-006 — Permisos con Spatie
 
-Cada acción tiene un permiso. Los roles de sistema son superadmin, admin, vendedor y facturación. `users.role` es el rol principal, de sistema o creado en el panel. Al guardar el usuario, ese nombre se sincroniza con Spatie y los permisos directos se conservan. `RolePermissions` es el mapa inicial y `PermissionSeeder` lo vuelve a aplicar solo a esos cuatro. Superadmin pasa en `Gate::before`. Admin no recibe `users.*` ni `roles.*`. El acceso es por `nickname`. El seeder crea el nickname `superadmin` con la misma contraseña que `admin` si no existe, y no reescribe una contraseña ya guardada.
+Cada acción tiene un permiso. Los roles de sistema son superadmin, admin, vendedor y facturación. `users.role` es el rol principal, de sistema o creado en el panel. Al guardar el usuario, ese nombre se sincroniza con Spatie y los permisos directos se conservan. `RolePermissions` es el mapa inicial y `PermissionSeeder` lo vuelve a aplicar solo a esos cuatro. Superadmin pasa en `Gate::before`. Admin no recibe `users.*` ni `roles.*`. El acceso es por `nickname`. El seeder crea el nickname `superadmin` con la misma contraseña que `admin` si no existe, y no reescribe una contraseña ya guardada. Ese dueño no se lista ni se edita ni se elimina en el panel.
 
 ## ADR-007 — PDF en servidor
 

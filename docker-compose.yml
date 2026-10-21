@@ -9,7 +9,7 @@ services:
 
   nginx:
     image: nginx:stable-alpine
-    container_name: nginx-crm
+    container_name: nginx-fyrmosa
     restart: unless-stopped
     ports:
       - "${PORT_NGINX:-8090}:80"
@@ -24,12 +24,13 @@ services:
       - appnetwork
 
   php:
+    image: fyrmosa-crm-php
     build:
       context: .
       dockerfile: Dockerfile
       args:
         INSTALL_XDEBUG: ${INSTALL_XDEBUG:-true}
-    container_name: php-crm
+    container_name: php-fyrmosa
     restart: unless-stopped
     working_dir: /var/www/html
     extra_hosts:
@@ -46,12 +47,13 @@ services:
       - appnetwork
 
   horizon:
+    image: fyrmosa-crm-horizon
     build:
       context: .
       dockerfile: Dockerfile
       args:
         INSTALL_XDEBUG: "false"
-    container_name: horizon-crm
+    container_name: horizon-fyrmosa
     restart: unless-stopped
     command: php artisan horizon
     working_dir: /var/www/html
@@ -66,12 +68,13 @@ services:
       - appnetwork
 
   scheduler:
+    image: fyrmosa-crm-scheduler
     build:
       context: .
       dockerfile: Dockerfile
       args:
         INSTALL_XDEBUG: "false"
-    container_name: scheduler-crm
+    container_name: scheduler-fyrmosa
     restart: unless-stopped
     command: php artisan schedule:work
     working_dir: /var/www/html
@@ -87,7 +90,7 @@ services:
 
   mysql:
     image: mysql:8.4
-    container_name: mysql-crm
+    container_name: mysql-fyrmosa
     restart: unless-stopped
     command:
       - --character-set-server=utf8mb4
@@ -116,7 +119,7 @@ services:
 
   redis:
     image: redis:8-alpine
-    container_name: redis-crm
+    container_name: redis-fyrmosa
     restart: unless-stopped
     ports:
       - "${PORT_REDIS:-6379}:6379"
@@ -131,7 +134,7 @@ services:
 
   phpmyadmin:
     image: phpmyadmin:latest
-    container_name: pma-crm
+    container_name: pma-fyrmosa
     restart: unless-stopped
     environment:
       PMA_HOST: mysql
