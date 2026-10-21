@@ -6,17 +6,38 @@
     <title>@yield('title', 'CRM') — Fyrmosa</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/core@1.4.0/dist/css/tabler.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.34.0/dist/tabler-icons.min.css">
+    <style>
+        .navbar-brand-image {
+            height: 2rem;
+            width: auto;
+        }
+
+        .login-page {
+            min-height: 100vh;
+            background:
+                linear-gradient(rgba(15, 23, 42, 0.72), rgba(15, 23, 42, 0.82)),
+                url("{{ asset('images/background.jpg') }}") center / cover no-repeat fixed;
+        }
+
+        .login-logo {
+            max-width: 16rem;
+            width: 100%;
+            height: auto;
+        }
+    </style>
 </head>
 <body>
-    <div class="page">
-        @auth
+    @auth
+        <div class="page">
             <header class="navbar navbar-expand-md d-print-none">
                 <div class="container-xl">
                     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar-menu">
                         <span class="navbar-toggler-icon"></span>
                     </button>
-                    <h1 class="navbar-brand navbar-brand-autodark pe-3">
-                        <a href="{{ route('dashboard') }}">Fyrmosa CRM</a>
+                    <h1 class="navbar-brand navbar-brand-autodark pe-3 mb-0">
+                        <a href="{{ route('dashboard') }}">
+                            <img class="navbar-brand-image" src="{{ asset('images/logoFyrmosa.webp') }}" alt="Fyrmosa CRM">
+                        </a>
                     </h1>
                     <div class="collapse navbar-collapse" id="navbar-menu">
                         <ul class="navbar-nav">
@@ -49,31 +70,38 @@
                     </div>
                 </div>
             </header>
-        @endauth
-        <div class="page-wrapper">
-            <div class="page-header d-print-none">
-                <div class="container-xl">
-                    <div class="row g-2 align-items-center">
-                        <div class="col">
-                            <h2 class="page-title">@yield('title')</h2>
-                            @hasSection('subtitle')
-                                <div class="text-secondary mt-1">@yield('subtitle')</div>
-                            @endif
-                        </div>
-                        <div class="col-auto ms-auto d-print-none">
-                            <div class="btn-list">@yield('actions')</div>
+            <div class="page-wrapper">
+                <div class="page-header d-print-none">
+                    <div class="container-xl">
+                        <div class="row g-2 align-items-center">
+                            <div class="col">
+                                <h2 class="page-title">@yield('title')</h2>
+                                @hasSection('subtitle')
+                                    <div class="text-secondary mt-1">@yield('subtitle')</div>
+                                @endif
+                            </div>
+                            <div class="col-auto ms-auto d-print-none">
+                                <div class="btn-list">@yield('actions')</div>
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
-            <div class="page-body">
-                <div class="container-xl">
-                    @include('partials.alerts')
-                    @yield('content')
+                <div class="page-body">
+                    <div class="container-xl">
+                        @include('partials.alerts')
+                        @yield('content')
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
+    @else
+        <div class="page page-center login-page">
+            <div class="container container-tight py-4">
+                @include('partials.alerts')
+                @yield('content')
+            </div>
+        </div>
+    @endauth
     <script src="https://cdn.jsdelivr.net/npm/@tabler/core@1.4.0/dist/js/tabler.min.js"></script>
     @stack('scripts')
 </body>

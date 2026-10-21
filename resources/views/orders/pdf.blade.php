@@ -4,19 +4,29 @@
     <meta charset="utf-8">
     <style>
         body { font-family: DejaVu Sans, sans-serif; font-size: 12px; color: #1f2933; }
-        h1 { font-size: 20px; margin-bottom: 0; }
+        h1 { font-size: 20px; margin: 0 0 4px; }
         table { width: 100%; border-collapse: collapse; margin-top: 16px; }
         th, td { border: 1px solid #d9e2ec; padding: 6px; text-align: left; }
         th { background: #f0f4f8; }
         .right { text-align: right; }
         .muted { color: #627d98; }
+        .header { width: 100%; margin-bottom: 18px; }
+        .header td { border: none; padding: 0; vertical-align: middle; }
+        .logo { height: 42px; width: auto; }
     </style>
 </head>
 <body>
-    <h1>Pedido {{ $order->folio }}</h1>
-    <p class="muted">{{ $order->status->label() }} · {{ $order->currency->label() }}
-        @if ($order->quotation) · Cotización {{ $order->quotation->folio }} v{{ $order->quotation_version }} @endif
-    </p>
+    <table class="header">
+        <tr>
+            <td>@include('partials.pdf-logo')</td>
+            <td class="right">
+                <h1>Pedido {{ $order->folio }}</h1>
+                <div class="muted">{{ $order->status->label() }} · {{ $order->currency->label() }}
+                    @if ($order->quotation) · Cotización {{ $order->quotation->folio }} v{{ $order->quotation_version }} @endif
+                </div>
+            </td>
+        </tr>
+    </table>
     <p>
         <strong>{{ $order->client_name }}</strong><br>
         {{ $order->legal_name }}<br>

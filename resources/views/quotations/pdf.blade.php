@@ -4,17 +4,27 @@
     <meta charset="utf-8">
     <style>
         body { font-family: DejaVu Sans, sans-serif; font-size: 12px; color: #1f2933; }
-        h1 { font-size: 20px; margin-bottom: 0; }
+        h1 { font-size: 20px; margin: 0 0 4px; }
         table { width: 100%; border-collapse: collapse; margin-top: 16px; }
         th, td { border: 1px solid #d9e2ec; padding: 6px; text-align: left; }
         th { background: #f0f4f8; }
         .right { text-align: right; }
         .muted { color: #627d98; }
+        .header { width: 100%; margin-bottom: 18px; }
+        .header td { border: none; padding: 0; vertical-align: middle; }
+        .logo { height: 42px; width: auto; }
     </style>
 </head>
 <body>
-    <h1>Cotización {{ $quotation->folio }}</h1>
-    <p class="muted">Versión {{ $quotation->version_number }} · {{ $quotation->status->label() }} · {{ $quotation->currency->label() }}</p>
+    <table class="header">
+        <tr>
+            <td>@include('partials.pdf-logo')</td>
+            <td class="right">
+                <h1>Cotización {{ $quotation->folio }}</h1>
+                <div class="muted">Versión {{ $quotation->version_number }} · {{ $quotation->status->label() }} · {{ $quotation->currency->label() }}</div>
+            </td>
+        </tr>
+    </table>
     <p>
         <strong>{{ $quotation->client_name }}</strong><br>
         {{ $quotation->legal_name }}<br>
