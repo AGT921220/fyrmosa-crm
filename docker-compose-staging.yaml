@@ -1,0 +1,107 @@
+services:
+  nginx:
+    image: nginx:stable-alpine
+    container_name: nginx-fyrmosa
+    restart: always
+    ports:
+      - "${PORT_NGINX:-8090}:80"
+    volumes:
+      - ./:/var/www/html
+      - ./docker/nginx/${NGINX_CONF_FILE:-default.conf}:/etc/nginx/conf.d/default.conf
+      - ./docker/nginx/logs:/var/log/nginx
+    depends_on:
+      - php
+    networks:
+      - appnetwork
+
+  php:
+    image: fyrmosa-crm-php
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        INSTALL_XDEBUG: "false"
+    container_name: php-fyrmosa
+    restart: always
+    working_dir: /var/www/html
+    environment:
+      XDEBUG_MODE: "off"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    volumes:
+      - ./:/var/www/html
+      - ./docker/php/php.ini:/usr/local/etc/php/php.ini
+    depends_on:
+      redis:
+        condition: service_healthy
+    networks:
+      - appnetwork
+
+  horizon:
+    image: fyrmosa-crm-horizon
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        INSTALL_XDEBUG: "false"
+    container_name: horizon-fyrmosa
+    restart: always
+    command: php artisan horizon
+    working_dir: /var/www/html
+    environment:
+      XDEBUG_MODE: "off"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    volumes:
+      - ./:/var/www/html
+      - ./docker/php/php.ini:/usr/local/etc/php/php.ini
+    depends_on:
+      redis:
+        condition: service_healthy
+    networks:
+      - appnetwork
+
+  scheduler:
+    image: fyrmosa-crm-scheduler
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        INSTALL_XDEBUG: "false"
+    container_name: scheduler-fyrmosa
+    restart: always
+    command: php artisan schedule:work
+    working_dir: /var/www/html
+    environment:
+      XDEBUG_MODE: "off"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    volumes:
+      - ./:/var/www/html
+      - ./docker/php/php.ini:/usr/local/etc/php/php.ini
+    depends_on:
+      redis:
+        condition: service_healthy
+    networks:
+      - appnetwork
+
+  redis:
+    image: redis:8-alpine
+    container_name: redis-fyrmosa
+    restart: always
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+    networks:
+      - appnetwork
+
+volumes:
+  redis_data:
+
+networks:
+  appnetwork:
+    external: true
