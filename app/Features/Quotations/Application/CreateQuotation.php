@@ -45,7 +45,7 @@ final class CreateQuotation
                 'delivery_time' => $data['delivery_time'] ?? null,
                 'internal_notes' => $data['internal_notes'] ?? null,
                 'client_notes' => $data['client_notes'] ?? null,
-                'status' => QuotationStatus::Draft,
+                'status' => QuotationStatus::Requested,
                 'subtotal' => $totals['subtotal'],
                 'discount_total' => $totals['discount_total'],
                 'tax_total' => $totals['tax_total'],

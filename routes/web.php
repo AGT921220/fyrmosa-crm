@@ -37,14 +37,14 @@ Route::middleware('auth')->group(function () {
     Route::post('quotations/{quotation}/convert', [QuotationController::class, 'convert'])->name('quotations.convert');
     Route::post('quotations/{quotation}/follow-ups', [QuotationController::class, 'followUp'])->name('quotations.follow-ups.store');
     Route::post('quotations/{quotation}/attachments', [QuotationController::class, 'attachment'])->name('quotations.attachments.store');
-    Route::resource('quotations', QuotationController::class)->except(['destroy']);
+    Route::resource('quotations', QuotationController::class);
 
     Route::get('orders/{order}/pdf', [OrderController::class, 'pdf'])->name('orders.pdf');
     Route::post('orders/{order}/status', [OrderController::class, 'status'])->name('orders.status');
     Route::post('orders/{order}/deliveries', [OrderController::class, 'delivery'])->name('orders.deliveries.store');
     Route::post('orders/{order}/follow-ups', [OrderController::class, 'followUp'])->name('orders.follow-ups.store');
     Route::post('orders/{order}/attachments', [OrderController::class, 'attachment'])->name('orders.attachments.store');
-    Route::resource('orders', OrderController::class)->except(['destroy']);
+    Route::resource('orders', OrderController::class);
 
     Route::get('attachments/{attachment}', [AttachmentController::class, 'download'])->name('attachments.download');
     Route::delete('attachments/{attachment}', [AttachmentController::class, 'destroy'])->name('attachments.destroy');

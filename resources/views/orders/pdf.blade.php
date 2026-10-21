@@ -35,7 +35,8 @@
     <p>Emisión: {{ $order->issued_on->format('d/m/Y') }}
         @if ($order->estimated_delivery_on) · Entrega estimada: {{ $order->estimated_delivery_on->format('d/m/Y') }} @endif
         <br>Responsable: {{ $order->user->name }}
-        @if ($order->client_folio) <br>Folio del cliente: {{ $order->client_folio }} @endif
+        @if ($order->client_folio) <br>Pedido de cliente: {{ $order->client_folio }} @endif
+        @if ($order->sae_folio) <br>Folio SAE: {{ $order->sae_folio }} @endif
     </p>
     <table>
         <thead>

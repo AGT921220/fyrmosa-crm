@@ -81,6 +81,7 @@ trait CreatesCrmUsers
     {
         return array_replace($this->quotationPayload($owner), [
             'client_folio' => 'OC-CLIENTE-1',
+            'sae_folio' => 'SAE-001',
             'estimated_delivery_on' => '2026-10-20',
             'notes' => 'Entregar en almacén',
             'items' => [

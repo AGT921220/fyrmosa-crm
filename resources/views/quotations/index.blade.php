@@ -100,7 +100,7 @@
                             </td>
                             <td class="text-end">
                                 <a class="btn btn-sm" href="{{ route('quotations.show', $quotation) }}">Ver</a>
-                                <a class="btn btn-sm" href="{{ route('quotations.pdf', $quotation) }}">PDF</a>
+                                <a class="btn btn-sm" href="{{ route('quotations.pdf', $quotation) }}" target="_blank" rel="noopener">PDF</a>
                             </td>
                         </tr>
                     @empty

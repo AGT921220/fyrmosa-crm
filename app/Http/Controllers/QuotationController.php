@@ -11,10 +11,12 @@ use App\Features\Quotations\Application\ChangeQuotationStatus;
 use App\Features\Quotations\Application\ConvertQuotationToOrder;
 use App\Features\Quotations\Application\CreateQuotation;
 use App\Features\Quotations\Application\CreateQuotationVersion;
+use App\Features\Quotations\Application\DeleteQuotation;
 use App\Features\Quotations\Application\DuplicateQuotation;
 use App\Features\Quotations\Application\UpdateQuotation;
 use App\Features\Shared\Application\StoreAttachment;
 use App\Http\Requests\ChangeQuotationStatusRequest;
+use App\Http\Requests\DeleteQuotationRequest;
 use App\Http\Requests\StoreAttachmentRequest;
 use App\Http\Requests\StoreFollowUpRequest;
 use App\Http\Requests\StoreQuotationRequest;
@@ -40,7 +42,7 @@ class QuotationController extends Controller
             'quotations' => Quotation::query()->with('user')->filtered($filters)->paginate(15)->withQueryString(),
             'filters' => $filters,
             'clients' => Client::query()->orderBy('name')->get(['id', 'name']),
-            'users' => User::query()->orderBy('name')->get(['id', 'name']),
+            'users' => User::query()->withoutOwner()->orderBy('name')->get(['id', 'name']),
             'statuses' => QuotationStatus::cases(),
             'currencies' => Currency::cases(),
         ]);
@@ -70,7 +72,7 @@ class QuotationController extends Controller
             'quotation' => $quotation,
             'chain' => $chain,
             'hasOrder' => $chain->contains(fn (Quotation $item) => $item->order !== null),
-            'users' => User::query()->orderBy('name')->get(['id', 'name']),
+            'users' => User::query()->withoutOwner()->orderBy('name')->get(['id', 'name']),
         ]);
     }
 
@@ -87,6 +89,13 @@ class QuotationController extends Controller
         $update($quotation, $request->user(), $request->validated());
 
         return redirect()->route('quotations.show', $quotation)->with('success', 'Cotización actualizada.');
+    }
+
+    public function destroy(DeleteQuotationRequest $request, Quotation $quotation, DeleteQuotation $delete): RedirectResponse
+    {
+        $delete($quotation, $request->user(), $request->validated('reason'));
+
+        return redirect()->route('quotations.index')->with('success', 'Cotización eliminada.');
     }
 
     public function duplicate(Quotation $quotation, DuplicateQuotation $duplicate): RedirectResponse
@@ -161,7 +170,7 @@ class QuotationController extends Controller
     {
         return [
             'clients' => Client::query()->with('contacts')->orderBy('name')->get(),
-            'users' => User::query()->orderBy('name')->get(['id', 'name']),
+            'users' => User::query()->withoutOwner()->orderBy('name')->get(['id', 'name']),
             'currencies' => Currency::cases(),
         ];
     }

@@ -33,15 +33,15 @@ final class CrmMetrics
             ->groupBy('currency', 'status')
             ->get();
 
-        $approved = $this->quotations($filters)
-            ->where('status', QuotationStatus::Approved->value)
+        $won = $this->quotations($filters)
+            ->where('status', QuotationStatus::Won->value)
             ->toBase()
             ->selectRaw('currency, COUNT(*) as aggregate')
             ->groupBy('currency')
             ->pluck('aggregate', 'currency');
 
         $converted = $this->quotations($filters)
-            ->where('status', QuotationStatus::Approved->value)
+            ->where('status', QuotationStatus::Won->value)
             ->whereHas('order')
             ->toBase()
             ->selectRaw('currency, COUNT(*) as aggregate')
@@ -52,7 +52,7 @@ final class CrmMetrics
         $monthRows = $this->quotations($filters)
             ->toBase()
             ->selectRaw("currency, {$month} as month, COUNT(*) as aggregate, SUM(total) as quoted, SUM(CASE WHEN status = ? THEN total ELSE 0 END) as approved", [
-                QuotationStatus::Approved->value,
+                QuotationStatus::Won->value,
             ])
             ->groupBy('currency', DB::raw($month))
             ->orderBy('month')
@@ -63,22 +63,24 @@ final class CrmMetrics
         foreach (Currency::cases() as $currency) {
             $quotes = $quotationRows->where('currency', $currency->value);
             $orders = $orderRows->where('currency', $currency->value);
-            $approvedCount = (int) ($approved[$currency->value] ?? 0);
+            $wonCount = (int) ($won[$currency->value] ?? 0);
             $convertedCount = (int) ($converted[$currency->value] ?? 0);
 
             $currencies[$currency->value] = [
                 'label' => $currency->label(),
                 'quotations_created' => (int) $quotes->sum('aggregate'),
                 'quotations_pending' => $this->countStatuses($quotes, [
-                    QuotationStatus::Sent,
-                    QuotationStatus::Following,
+                    QuotationStatus::Requested,
+                    QuotationStatus::Quoted,
                     QuotationStatus::Negotiating,
                 ]),
-                'quotations_approved' => $this->countStatuses($quotes, [QuotationStatus::Approved]),
+                'quotations_negotiating' => $this->countStatuses($quotes, [QuotationStatus::Negotiating]),
+                'quotations_won' => $this->countStatuses($quotes, [QuotationStatus::Won]),
                 'quotations_rejected' => $this->countStatuses($quotes, [QuotationStatus::Rejected]),
-                'quotations_expired' => $this->countStatuses($quotes, [QuotationStatus::Expired]),
+                'quotations_lost' => $this->countStatuses($quotes, [QuotationStatus::Lost]),
                 'quoted_amount' => $this->sumAmount($quotes),
-                'approved_amount' => $this->sumAmount($quotes->where('status', QuotationStatus::Approved->value)),
+                'negotiating_amount' => $this->sumAmount($quotes->where('status', QuotationStatus::Negotiating->value)),
+                'won_amount' => $this->sumAmount($quotes->where('status', QuotationStatus::Won->value)),
                 'orders_active' => $this->countStatuses($orders, [
                     OrderStatus::PendingConfirmation,
                     OrderStatus::Confirmed,
@@ -89,9 +91,9 @@ final class CrmMetrics
                 'orders_amount' => $this->sumAmount($orders->where('status', '!=', OrderStatus::Cancelled->value)),
                 'status_counts' => $quotes->mapWithKeys(fn ($row) => [$row->status => (int) $row->aggregate])->all(),
                 'conversion' => [
-                    'approved' => $approvedCount,
+                    'approved' => $wonCount,
                     'converted' => $convertedCount,
-                    'rate' => $approvedCount === 0 ? 0 : round(($convertedCount / $approvedCount) * 100, 1),
+                    'rate' => $wonCount === 0 ? 0 : round(($convertedCount / $wonCount) * 100, 1),
                 ],
             ];
         }
@@ -198,7 +200,7 @@ final class CrmMetrics
     {
         return $this->openFollowUps(Quotation::query(), $filters, $overdue, [
             QuotationStatus::Rejected->value,
-            QuotationStatus::Cancelled->value,
+            QuotationStatus::Lost->value,
         ]) + $this->openFollowUps(Order::query(), $filters, $overdue, [
             OrderStatus::Cancelled->value,
             OrderStatus::Completed->value,

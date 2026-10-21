@@ -7,8 +7,8 @@
 
 @section('actions')
     @can('pdf', $quotation)
-        <a class="btn" href="{{ route('quotations.pdf', $quotation) }}">Ver PDF</a>
-        <a class="btn" href="{{ route('quotations.pdf', [$quotation, 'download' => 1]) }}">Descargar PDF</a>
+        <a class="btn" href="{{ route('quotations.pdf', $quotation) }}" target="_blank" rel="noopener">Ver PDF</a>
+        <a class="btn" href="{{ route('quotations.pdf', [$quotation, 'download' => 1]) }}" target="_blank" rel="noopener">Descargar PDF</a>
     @endcan
     @can('duplicate', $quotation)
         <form method="POST" action="{{ route('quotations.duplicate', $quotation) }}">@csrf<button class="btn" type="submit">Duplicar</button></form>
@@ -24,9 +24,12 @@
         @endif
     @endcan
     @can('convert', $quotation)
-        @if ($quotation->status === App\Enums\QuotationStatus::Approved && ! $hasOrder)
+        @if ($quotation->status === App\Enums\QuotationStatus::Won && ! $hasOrder)
             <form method="POST" action="{{ route('quotations.convert', $quotation) }}">@csrf<button class="btn btn-success" type="submit">Convertir a pedido</button></form>
         @endif
+    @endcan
+    @can('delete', $quotation)
+        <button class="btn btn-outline-danger" type="button" data-bs-toggle="modal" data-bs-target="#delete-quotation-modal">Eliminar</button>
     @endcan
 @endsection
 
@@ -75,7 +78,7 @@
                                 @endforeach
                             </select>
                         </div>
-                        <div class="col-md-5"><input class="form-control" name="comment" placeholder="Comentario o motivo"></div>
+                        <div class="col-md-5"><input class="form-control" name="comment" placeholder="Motivo (obligatorio en rechazada o perdida)"></div>
                         <div class="col-md-3"><button class="btn btn-primary w-100" type="submit">Cambiar estado</button></div>
                     </form>
                     @endcan
@@ -132,4 +135,27 @@
             </div>
         </div>
     </div>
+
+    @can('delete', $quotation)
+        <div class="modal modal-blur fade" id="delete-quotation-modal" tabindex="-1">
+            <div class="modal-dialog modal-sm modal-dialog-centered">
+                <form class="modal-content" method="POST" action="{{ route('quotations.destroy', $quotation) }}">
+                    @csrf
+                    @method('DELETE')
+                    <div class="modal-header">
+                        <h5 class="modal-title">Eliminar cotización</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <label class="form-label" for="quotation-delete-reason">Motivo</label>
+                        <textarea class="form-control" id="quotation-delete-reason" name="reason" rows="3" required maxlength="2000"></textarea>
+                    </div>
+                    <div class="modal-footer">
+                        <button class="btn btn-link link-secondary" type="button" data-bs-dismiss="modal">Cancelar</button>
+                        <button class="btn btn-danger" type="submit">Eliminar</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    @endcan
 @endsection

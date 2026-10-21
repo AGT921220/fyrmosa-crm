@@ -63,11 +63,13 @@
             @foreach ([
                 'Cotizaciones creadas' => $bucket['quotations_created'],
                 'Pendientes' => $bucket['quotations_pending'],
-                'Aprobadas' => $bucket['quotations_approved'],
+                'En negociación' => $bucket['quotations_negotiating'],
+                'Ganadas' => $bucket['quotations_won'],
                 'Rechazadas' => $bucket['quotations_rejected'],
-                'Vencidas' => $bucket['quotations_expired'],
+                'Perdidas' => $bucket['quotations_lost'],
                 'Monto cotizado' => \App\Support\Money::display($bucket['quoted_amount'], $code),
-                'Monto aprobado' => \App\Support\Money::display($bucket['approved_amount'], $code),
+                'Monto en negociación' => \App\Support\Money::display($bucket['negotiating_amount'], $code),
+                'Monto ganado' => \App\Support\Money::display($bucket['won_amount'], $code),
                 'Pedidos activos' => $bucket['orders_active'],
                 'Pedidos completados' => $bucket['orders_completed'],
                 'Monto de pedidos' => \App\Support\Money::display($bucket['orders_amount'], $code),
@@ -80,7 +82,7 @@
         </div>
         <div class="row mb-4">
             <div class="col-md-6"><div class="card"><div class="card-body"><h4>Cotizaciones por mes</h4><canvas id="month-{{ $code }}"></canvas></div></div></div>
-            <div class="col-md-6"><div class="card"><div class="card-body"><h4>Montos cotizados y aprobados</h4><canvas id="amounts-{{ $code }}"></canvas></div></div></div>
+            <div class="col-md-6"><div class="card"><div class="card-body"><h4>Montos cotizados y ganados</h4><canvas id="amounts-{{ $code }}"></canvas></div></div></div>
         </div>
     @endforeach
 
@@ -105,7 +107,7 @@
                 labels: metrics.months,
                 datasets: [
                     { label: 'Cotizado', data: series.quoted },
-                    { label: 'Aprobado', data: series.approved },
+                    { label: 'Ganado', data: series.approved },
                 ],
             },
         });

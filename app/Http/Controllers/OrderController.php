@@ -8,11 +8,13 @@ use App\Enums\Currency;
 use App\Enums\OrderStatus;
 use App\Features\Orders\Application\ChangeOrderStatus;
 use App\Features\Orders\Application\CreateOrder;
+use App\Features\Orders\Application\DeleteOrder;
 use App\Features\Orders\Application\RegisterDelivery;
 use App\Features\Orders\Application\UpdateOrder;
 use App\Features\Quotations\Application\AddFollowUp;
 use App\Features\Shared\Application\StoreAttachment;
 use App\Http\Requests\ChangeOrderStatusRequest;
+use App\Http\Requests\DeleteOrderRequest;
 use App\Http\Requests\StoreAttachmentRequest;
 use App\Http\Requests\StoreDeliveryRequest;
 use App\Http\Requests\StoreFollowUpRequest;
@@ -38,7 +40,7 @@ class OrderController extends Controller
             'orders' => Order::query()->with(['user', 'quotation'])->filtered($filters)->paginate(15)->withQueryString(),
             'filters' => $filters,
             'clients' => Client::query()->orderBy('name')->get(['id', 'name']),
-            'users' => User::query()->orderBy('name')->get(['id', 'name']),
+            'users' => User::query()->withoutOwner()->orderBy('name')->get(['id', 'name']),
             'statuses' => OrderStatus::cases(),
             'currencies' => Currency::cases(),
         ]);
@@ -76,7 +78,7 @@ class OrderController extends Controller
 
         return view('orders.show', [
             'order' => $order,
-            'users' => User::query()->orderBy('name')->get(['id', 'name']),
+            'users' => User::query()->withoutOwner()->orderBy('name')->get(['id', 'name']),
         ]);
     }
 
@@ -93,6 +95,13 @@ class OrderController extends Controller
         $update($order, $request->user(), $request->validated());
 
         return redirect()->route('orders.show', $order)->with('success', 'Pedido actualizado.');
+    }
+
+    public function destroy(DeleteOrderRequest $request, Order $order, DeleteOrder $delete): RedirectResponse
+    {
+        $delete($order, $request->user(), $request->validated('reason'));
+
+        return redirect()->route('orders.index')->with('success', 'Pedido eliminado.');
     }
 
     public function status(ChangeOrderStatusRequest $request, Order $order, ChangeOrderStatus $change): RedirectResponse
@@ -151,7 +160,7 @@ class OrderController extends Controller
     {
         return [
             'clients' => Client::query()->with('contacts')->orderBy('name')->get(),
-            'users' => User::query()->orderBy('name')->get(['id', 'name']),
+            'users' => User::query()->withoutOwner()->orderBy('name')->get(['id', 'name']),
             'currencies' => Currency::cases(),
         ];
     }

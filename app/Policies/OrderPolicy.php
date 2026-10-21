@@ -56,4 +56,9 @@ class OrderPolicy
             || $user->hasPermission(Permission::OrdersConfirm)
             || $user->hasPermission(Permission::OrdersCancel);
     }
+
+    public function delete(User $user, Order $order): bool
+    {
+        return $user->hasPermission(Permission::OrdersDelete);
+    }
 }

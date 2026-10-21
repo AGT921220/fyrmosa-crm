@@ -16,9 +16,8 @@ enum Permission: string
     case QuotationsView = 'quotations.view';
     case QuotationsCreate = 'quotations.create';
     case QuotationsUpdate = 'quotations.update';
-    case QuotationsApprove = 'quotations.approve';
-    case QuotationsReject = 'quotations.reject';
-    case QuotationsCancel = 'quotations.cancel';
+    case QuotationsChangeStatus = 'quotations.change_status';
+    case QuotationsDelete = 'quotations.delete';
     case QuotationsHistory = 'quotations.history';
     case QuotationsFollowUp = 'quotations.follow_up';
     case QuotationsDuplicate = 'quotations.duplicate';
@@ -34,6 +33,7 @@ enum Permission: string
     case OrdersCancel = 'orders.cancel';
     case OrdersDeliver = 'orders.deliver';
     case OrdersFollowUp = 'orders.follow_up';
+    case OrdersDelete = 'orders.delete';
     case OrdersPdf = 'orders.pdf';
     case OrdersAttachments = 'orders.attachments';
 
@@ -58,9 +58,8 @@ enum Permission: string
             self::QuotationsView => 'Ver cotizaciones',
             self::QuotationsCreate => 'Crear cotizaciones',
             self::QuotationsUpdate => 'Editar cotizaciones',
-            self::QuotationsApprove => 'Aprobar cotizaciones',
-            self::QuotationsReject => 'Rechazar cotizaciones',
-            self::QuotationsCancel => 'Cancelar cotizaciones',
+            self::QuotationsChangeStatus => 'Cambiar estado de cotizaciones',
+            self::QuotationsDelete => 'Eliminar cotizaciones',
             self::QuotationsHistory => 'Ver histórico de cotizaciones',
             self::QuotationsFollowUp => 'Registrar seguimientos de cotizaciones',
             self::QuotationsDuplicate => 'Duplicar cotizaciones',
@@ -75,6 +74,7 @@ enum Permission: string
             self::OrdersCancel => 'Cancelar pedidos',
             self::OrdersDeliver => 'Registrar entregas',
             self::OrdersFollowUp => 'Registrar seguimientos de pedidos',
+            self::OrdersDelete => 'Eliminar pedidos',
             self::OrdersPdf => 'Ver PDF de pedidos',
             self::OrdersAttachments => 'Adjuntar documentos en pedidos',
             self::UsersView => 'Ver usuarios',

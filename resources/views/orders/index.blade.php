@@ -15,7 +15,7 @@
     <form class="card mb-3" method="GET">
         <div class="card-body">
             <div class="row g-2">
-                <div class="col-md-3"><input class="form-control" name="q" value="{{ $filters['q'] ?? '' }}" placeholder="Folio, cliente o cotización"></div>
+                <div class="col-md-3"><input class="form-control" name="q" value="{{ $filters['q'] ?? '' }}" placeholder="Folio, SAE, pedido cliente o cotización"></div>
                 <div class="col-md-2">
                     <select class="form-select" name="status">
                         <option value="">Estado</option>
@@ -60,6 +60,8 @@
                 <thead>
                     <tr>
                         <th><a href="{{ $sortLink('folio') }}">Folio</a></th>
+                        <th>Pedido de cliente</th>
+                        <th>Folio SAE</th>
                         <th>Cotización</th>
                         <th><a href="{{ $sortLink('client_name') }}">Cliente</a></th>
                         <th><a href="{{ $sortLink('issued_on') }}">Emisión</a></th>
@@ -74,6 +76,8 @@
                     @forelse ($orders as $order)
                         <tr>
                             <td><a href="{{ route('orders.show', $order) }}">{{ $order->folio }}</a></td>
+                            <td>{{ $order->client_folio }}</td>
+                            <td>{{ $order->sae_folio }}</td>
                             <td>
                                 @if ($order->quotation)
                                     <a href="{{ route('quotations.show', $order->quotation) }}">{{ $order->quotation->folio }}</a>
@@ -87,11 +91,11 @@
                             <td>{{ $order->user->name }}</td>
                             <td class="text-end">
                                 <a class="btn btn-sm" href="{{ route('orders.show', $order) }}">Ver</a>
-                                <a class="btn btn-sm" href="{{ route('orders.pdf', $order) }}">PDF</a>
+                                <a class="btn btn-sm" href="{{ route('orders.pdf', $order) }}" target="_blank" rel="noopener">PDF</a>
                             </td>
                         </tr>
                     @empty
-                        <tr><td colspan="9" class="text-secondary">No hay pedidos con estos filtros.</td></tr>
+                        <tr><td colspan="11" class="text-secondary">No hay pedidos con estos filtros.</td></tr>
                     @endforelse
                 </tbody>
             </table>

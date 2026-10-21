@@ -14,8 +14,7 @@ final class ExpireQuotations
     {
         $ids = Quotation::query()
             ->whereIn('status', [
-                QuotationStatus::Sent->value,
-                QuotationStatus::Following->value,
+                QuotationStatus::Quoted->value,
                 QuotationStatus::Negotiating->value,
             ])
             ->whereDate('expires_on', '<', now()->toDateString())
@@ -28,20 +27,20 @@ final class ExpireQuotations
             $expired = DB::transaction(function () use ($id) {
                 $quotation = Quotation::query()->whereKey($id)->lockForUpdate()->first();
 
-                if ($quotation === null || ! in_array(QuotationStatus::Expired, $quotation->status->transitions(), true)) {
+                if ($quotation === null || ! in_array(QuotationStatus::Lost, $quotation->status->transitions(), true)) {
                     return false;
                 }
 
                 $from = $quotation->status;
-                $quotation->status = QuotationStatus::Expired;
+                $quotation->status = QuotationStatus::Lost;
                 $quotation->save();
                 $quotation->activities()->create([
                     'action' => 'status_changed',
                     'user_id' => null,
-                    'comment' => 'Vencida por fecha de vencimiento.',
+                    'comment' => 'Perdida por fecha de vencimiento.',
                     'properties' => [
                         'from' => $from->value,
-                        'to' => QuotationStatus::Expired->value,
+                        'to' => QuotationStatus::Lost->value,
                     ],
                 ]);
 

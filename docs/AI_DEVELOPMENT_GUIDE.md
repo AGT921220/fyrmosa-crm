@@ -19,11 +19,17 @@ Recetas de este repositorio. Las clases citadas son las de referencia.
 
 ## Versión
 
-`CreateQuotationVersion` copia la cotización, conserva el `sequence_number`, sube `version_number` y deja la nueva en borrador. No crea versión si la cadena ya tiene un borrador.
+`CreateQuotationVersion` copia la cotización, conserva el `sequence_number`, sube `version_number` y deja la nueva en solicitada. No crea versión si la cadena ya tiene una solicitada.
 
 ## Conversión
 
-`ConvertQuotationToOrder` exige estado aprobada, bloquea si otra versión de la cadena ya tiene pedido y copia importes guardados, sin recalcular.
+`ConvertQuotationToOrder` exige estado ganada, bloquea si otra versión de la cadena ya tiene pedido y copia importes guardados, sin recalcular.
+
+## Eliminar cotización o pedido
+
+1. Permiso `quotations.delete` u `orders.delete` (solo admin en el mapa de roles).
+2. FormRequest exige `reason`.
+3. Caso de uso `DeleteQuotation` / `DeleteOrder`: registra actividad, guarda motivo y hace soft delete.
 
 ## Cliente y contactos
 

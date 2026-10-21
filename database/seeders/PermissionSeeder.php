@@ -22,6 +22,11 @@ class PermissionSeeder extends Seeder
             PermissionModel::findOrCreate($permission->value, 'web');
         }
 
+        PermissionModel::query()
+            ->where('guard_name', 'web')
+            ->whereNotIn('name', Permission::values())
+            ->delete();
+
         foreach (Role::cases() as $role) {
             $model = RoleModel::findOrCreate($role->value, 'web');
             $model->syncPermissions(array_map(

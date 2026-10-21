@@ -18,6 +18,7 @@ enum ActivityAction: string
     case AttachmentAdded = 'attachment_added';
     case AttachmentRemoved = 'attachment_removed';
     case DeliveryRegistered = 'delivery_registered';
+    case Deleted = 'deleted';
 
     public function label(): string
     {
@@ -34,6 +35,7 @@ enum ActivityAction: string
             self::AttachmentAdded => 'Documento adjunto',
             self::AttachmentRemoved => 'Documento eliminado',
             self::DeliveryRegistered => 'Entrega registrada',
+            self::Deleted => 'Eliminación',
         };
     }
 }

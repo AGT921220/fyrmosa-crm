@@ -56,6 +56,8 @@ class Quotation extends Model
         'tax_total',
         'total',
         'next_follow_up_at',
+        'deleted_reason',
+        'deleted_by',
     ];
 
     protected function casts(): array
@@ -91,6 +93,11 @@ class Quotation extends Model
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function deletedBy(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'deleted_by');
     }
 
     public function parent(): BelongsTo

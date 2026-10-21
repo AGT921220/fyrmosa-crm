@@ -33,7 +33,7 @@ class DashboardController extends Controller
             'filters' => $filters,
             'metrics' => $metrics($filters),
             'clients' => Client::query()->orderBy('name')->get(['id', 'name']),
-            'users' => User::query()->orderBy('name')->get(['id', 'name']),
+            'users' => User::query()->withoutOwner()->orderBy('name')->get(['id', 'name']),
             'quotationStatuses' => QuotationStatus::cases(),
             'orderStatuses' => OrderStatus::cases(),
         ]);

@@ -8,6 +8,8 @@ use App\Enums\OrderStatus;
 use App\Enums\Role;
 use App\Models\Order;
 use App\Models\OrderItem;
+use App\Models\User;
+use Database\Seeders\DatabaseSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\CreatesCrmUsers;
 use Tests\TestCase;
@@ -89,5 +91,43 @@ class OrderTest extends TestCase
             ->assertSessionHas('error');
 
         $this->assertSame('0.0000', $order->items()->first()->quantity_delivered);
+    }
+
+    public function test_stores_client_and_sae_folios_and_shows_them_in_index(): void
+    {
+        $operations = $this->userWithRole(Role::Facturacion);
+
+        $this->actingAs($operations)
+            ->post(route('orders.store'), $this->orderPayload($operations, [
+                'client_folio' => 'PED-CLI-99',
+                'sae_folio' => 'SAE-7788',
+            ]))
+            ->assertRedirect();
+
+        $order = Order::query()->first();
+        $this->assertSame('PED-CLI-99', $order->client_folio);
+        $this->assertSame('SAE-7788', $order->sae_folio);
+
+        $this->actingAs($operations)
+            ->get(route('orders.index'))
+            ->assertOk()
+            ->assertSee('Pedido de cliente')
+            ->assertSee('Folio SAE')
+            ->assertSee('PED-CLI-99')
+            ->assertSee('SAE-7788');
+    }
+
+    public function test_create_form_does_not_list_the_owner(): void
+    {
+        $this->seed(DatabaseSeeder::class);
+        $operations = $this->userWithRole(Role::Facturacion);
+        $owner = User::query()->where('nickname', 'superadmin')->firstOrFail();
+
+        $users = $this->actingAs($operations)
+            ->get(route('orders.create'))
+            ->assertOk()
+            ->viewData('users');
+
+        $this->assertFalse($users->contains(fn (User $user): bool => $user->id === $owner->id));
     }
 }

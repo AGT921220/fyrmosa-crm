@@ -39,6 +39,7 @@ final class UpdateOrder
 
             $order->fill(array_merge(PartyAttributes::capture((int) $data['client_id'], (int) $data['contact_id']), [
                 'client_folio' => $data['client_folio'] ?? null,
+                'sae_folio' => $data['sae_folio'] ?? null,
                 'issued_on' => $data['issued_on'],
                 'estimated_delivery_on' => $data['estimated_delivery_on'] ?? null,
                 'user_id' => $data['user_id'],

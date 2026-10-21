@@ -23,8 +23,12 @@
             <div class="row g-3">
                 @include('partials.party-picker')
                 <div class="col-md-4">
-                    <label class="form-label" for="client_folio">Folio del cliente</label>
+                    <label class="form-label" for="client_folio">Pedido de cliente</label>
                     <input class="form-control" id="client_folio" name="client_folio" value="{{ old('client_folio', $document->client_folio ?? '') }}">
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label" for="sae_folio">Folio SAE</label>
+                    <input class="form-control" id="sae_folio" name="sae_folio" value="{{ old('sae_folio', $document->sae_folio ?? '') }}">
                 </div>
                 <div class="col-md-3">
                     <label class="form-label" for="issued_on">Emisión</label>

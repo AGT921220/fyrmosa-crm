@@ -25,8 +25,12 @@ final class ChangeQuotationStatus
             throw new CrmRuleException('No se puede cambiar de '.$quotation->status->label().' a '.$status->label().'.');
         }
 
-        if (in_array($status, [QuotationStatus::Rejected, QuotationStatus::Cancelled], true) && blank($comment)) {
-            throw new CrmRuleException('El motivo es obligatorio para rechazar o cancelar.');
+        if ($status->requiresComment() && blank($comment)) {
+            $message = $status === QuotationStatus::Lost
+                ? 'La nota del motivo es obligatoria cuando la cotización se pierde.'
+                : 'El motivo es obligatorio para rechazar.';
+
+            throw new CrmRuleException($message);
         }
 
         return DB::transaction(function () use ($quotation, $status, $user, $comment) {
@@ -39,7 +43,7 @@ final class ChangeQuotationStatus
                 'to' => $status->value,
             ]);
 
-            if ($status === QuotationStatus::Approved) {
+            if ($status === QuotationStatus::Won) {
                 ($this->snapshot)($quotation, $user);
             }
 

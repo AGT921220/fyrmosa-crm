@@ -13,13 +13,13 @@ Reglas cortas para trabajar en este repositorio. El código de este proyecto es 
 9. La persistencia es Eloquent directo. No hay Repository Pattern ni API Resources.
 10. Los importes se calculan en el servidor con `App\Support\Money`. El JavaScript de la captura solo muestra el mismo resultado.
 11. No sumes MXN y USD. Las métricas van separadas por moneda.
-12. Una cotización aprobada, rechazada, vencida o cancelada no se edita. Los cambios comerciales de una enviada se hacen con una versión nueva.
+12. Estados de cotización: `solicitada`, `cotizada`, `en_negociacion`, `rechazada`, `ganada`, `perdida`. Rechazada y perdida exigen motivo. Una cotización rechazada, ganada o perdida no se edita. Los cambios comerciales de una cotizada o en negociación se hacen con una versión nueva. Solo admin (permiso `quotations.delete` / `orders.delete`) elimina cotizaciones y pedidos: soft delete con motivo obligatorio.
 13. El pedido copia importes y conceptos. Un cambio posterior en la cotización no lo altera.
 14. Solo un pedido por cadena de versiones. El índice único de `quotation_id` refuerza esa regla.
 15. No registres entregas en un pedido cancelado ni cantidades mayores a lo pendiente.
 16. El histórico (`activity_logs`, `quotation_versions`, entregas) no se borra al modificar la operación.
 17. Los folios salen de `folio_sequences` con `lockForUpdate` dentro de una transacción.
-18. Los permisos viven en Spatie (`spatie/laravel-permission`). Cada acción tiene un caso en `Permission`. Los roles de sistema son `superadmin`, `admin`, `vendedor` y `facturacion`. `users.role` guarda el rol principal, de sistema o creado en el panel; al guardar el usuario se sincroniza ese rol de Spatie y se conservan los permisos directos. Superadmin pasa siempre (`Gate::before`). Admin tiene el resto de acciones, sin usuarios ni roles. El panel de accesos exige `users.*` o `roles.*`. `PermissionSeeder` restaura los cuatro roles de sistema y no borra roles creados en el panel. El acceso local del dueño es el nickname `superadmin`, con la misma contraseña que `admin`. El seeder crea esos usuarios si no existen y no reescribe una contraseña ya guardada. El dueño (`nickname` `superadmin`) no aparece en el listado de usuarios y nadie puede verlo, editarlo ni eliminarlo en el panel.
+18. Los permisos viven en Spatie (`spatie/laravel-permission`). Cada acción tiene un caso en `Permission`. Los roles de sistema son `superadmin`, `admin`, `vendedor` y `facturacion`. `users.role` guarda el rol principal, de sistema o creado en el panel; al guardar el usuario se sincroniza ese rol de Spatie y se conservan los permisos directos. Superadmin pasa siempre (`Gate::before`). Admin tiene el resto de acciones, sin usuarios ni roles, e incluye `quotations.delete` y `orders.delete`. Vendedor cambia estado con `quotations.change_status` y no elimina. El panel de accesos exige `users.*` o `roles.*`. `PermissionSeeder` restaura los cuatro roles de sistema y no borra roles creados en el panel. El acceso local del dueño es el nickname `superadmin`, con la misma contraseña que `admin`. El seeder crea esos usuarios si no existen y no reescribe una contraseña ya guardada. El dueño (`nickname` `superadmin`) no aparece en el listado de usuarios y nadie puede verlo, editarlo ni eliminarlo en el panel.
 19. Autoriza en FormRequest o Policy. No confíes solo en ocultar el botón.
 20. Estados en enums: `QuotationStatus` y `OrderStatus`. No compares strings sueltos si ya tienes el enum.
 21. Busca el caso de uso equivalente antes de crear otro: cotización para el flujo comercial, pedido para entregas.
@@ -28,7 +28,7 @@ Reglas cortas para trabajar en este repositorio. El código de este proyecto es 
 24. Vistas en `resources/views`, layout `layouts/app.blade.php`, estilos Tabler. No introduzcas Tailwind, React, Vue ni Livewire en el panel.
 25. El listado es una tabla Blade con filtros y paginación Bootstrap. No hace falta DataTables.
 26. Pruebas en `tests/Feature` con `RefreshDatabase` y SQLite en memoria. Dentro de Docker: `docker compose exec php php artisan test`.
-27. El vencimiento automático es `php artisan crm:expire-quotations`, programado a diario en `routes/console.php`. El contenedor `scheduler` lo dispara con `schedule:work`. Horizon procesa la cola Redis.
+27. El vencimiento automático es `php artisan crm:expire-quotations` (pasa cotizada/en negociación vencidas a `perdida`), programado a diario en `routes/console.php`. El contenedor `scheduler` lo dispara con `schedule:work`. Horizon procesa la cola Redis.
 28. Actualiza `AGENTS.md`, `.cursor/rules` y `docs/AI_*` solo si cambia arquitectura, dominio, permisos, colas o el contrato de un módulo.
 29. No pongas secretos ni valores de `.env` en la documentación.
 30. No corras `migrate:fresh` salvo que se pida. No borres datos de histórico para “limpiar”.

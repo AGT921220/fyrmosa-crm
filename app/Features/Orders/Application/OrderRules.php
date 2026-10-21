@@ -18,6 +18,7 @@ final class OrderRules
     {
         return [
             'client_folio' => ['nullable', 'string', 'max:80'],
+            'sae_folio' => ['nullable', 'string', 'max:80'],
             'client_id' => ['required', 'integer', 'exists:clients,id'],
             'contact_id' => ['required', 'integer', Rule::exists('contacts', 'id')->where(fn ($query) => $query->where('client_id', request()->input('client_id')))],
             'issued_on' => ['required', 'date'],
@@ -45,7 +46,8 @@ final class OrderRules
     public static function attributes(): array
     {
         return [
-            'client_folio' => 'folio del cliente',
+            'client_folio' => 'pedido de cliente',
+            'sae_folio' => 'folio SAE',
             'client_id' => 'cliente',
             'contact_id' => 'contacto',
             'issued_on' => 'fecha de emisión',
@@ -90,6 +92,16 @@ final class OrderRules
             'items' => ['required', 'array', 'min:1'],
             'items.*.order_item_id' => ['required', 'integer'],
             'items.*.quantity' => ['nullable', 'numeric', 'gte:0'],
+        ];
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    public static function delete(): array
+    {
+        return [
+            'reason' => ['required', 'string', 'max:2000'],
         ];
     }
 }

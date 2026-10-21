@@ -32,6 +32,7 @@ class Order extends Model
         'quotation_id',
         'quotation_version',
         'client_folio',
+        'sae_folio',
         'client_id',
         'contact_id',
         'client_name',
@@ -55,6 +56,8 @@ class Order extends Model
         'tax_total',
         'total',
         'next_follow_up_at',
+        'deleted_reason',
+        'deleted_by',
     ];
 
     protected function casts(): array
@@ -93,6 +96,11 @@ class Order extends Model
         return $this->belongsTo(User::class);
     }
 
+    public function deletedBy(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'deleted_by');
+    }
+
     public function converter(): BelongsTo
     {
         return $this->belongsTo(User::class, 'converted_by');
@@ -120,6 +128,7 @@ class Order extends Model
             $query->where(function (Builder $query) use ($like) {
                 $query->where('folio', 'like', $like)
                     ->orWhere('client_folio', 'like', $like)
+                    ->orWhere('sae_folio', 'like', $like)
                     ->orWhere('client_name', 'like', $like)
                     ->orWhere('legal_name', 'like', $like)
                     ->orWhere('contact_first_name', 'like', $like)

@@ -67,9 +67,11 @@ class QuotationPolicy
 
     public function changeStatus(User $user, Quotation $quotation): bool
     {
-        return $user->hasPermission(Permission::QuotationsUpdate)
-            || $user->hasPermission(Permission::QuotationsApprove)
-            || $user->hasPermission(Permission::QuotationsReject)
-            || $user->hasPermission(Permission::QuotationsCancel);
+        return $user->hasPermission(Permission::QuotationsChangeStatus);
+    }
+
+    public function delete(User $user, Quotation $quotation): bool
+    {
+        return $user->hasPermission(Permission::QuotationsDelete);
     }
 }

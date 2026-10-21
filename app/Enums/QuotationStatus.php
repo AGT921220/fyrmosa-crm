@@ -6,64 +6,66 @@ namespace App\Enums;
 
 enum QuotationStatus: string
 {
-    case Draft = 'borrador';
-    case Sent = 'enviada';
-    case Following = 'en_seguimiento';
+    case Requested = 'solicitada';
+    case Quoted = 'cotizada';
     case Negotiating = 'en_negociacion';
-    case Approved = 'aprobada';
     case Rejected = 'rechazada';
-    case Expired = 'vencida';
-    case Cancelled = 'cancelada';
+    case Won = 'ganada';
+    case Lost = 'perdida';
 
     public function label(): string
     {
         return match ($this) {
-            self::Draft => 'Borrador',
-            self::Sent => 'Enviada',
-            self::Following => 'En seguimiento',
+            self::Requested => 'Solicitada',
+            self::Quoted => 'Cotizada',
             self::Negotiating => 'En negociación',
-            self::Approved => 'Aprobada',
             self::Rejected => 'Rechazada',
-            self::Expired => 'Vencida',
-            self::Cancelled => 'Cancelada',
+            self::Won => 'Ganada',
+            self::Lost => 'Perdida',
         };
     }
 
     public function badge(): string
     {
         return match ($this) {
-            self::Draft => 'bg-secondary-lt',
-            self::Sent => 'bg-azure-lt',
-            self::Following => 'bg-blue-lt',
+            self::Requested => 'bg-secondary-lt',
+            self::Quoted => 'bg-azure-lt',
             self::Negotiating => 'bg-yellow-lt',
-            self::Approved => 'bg-green-lt',
             self::Rejected => 'bg-red-lt',
-            self::Expired => 'bg-orange-lt',
-            self::Cancelled => 'bg-dark-lt',
+            self::Won => 'bg-green-lt',
+            self::Lost => 'bg-dark-lt',
         };
     }
 
     public function isEditable(): bool
     {
         return match ($this) {
-            self::Draft, self::Sent, self::Following, self::Negotiating => true,
-            self::Approved, self::Rejected, self::Expired, self::Cancelled => false,
+            self::Requested, self::Quoted, self::Negotiating => true,
+            self::Rejected, self::Won, self::Lost => false,
         };
     }
 
     public function canVersion(): bool
     {
         return match ($this) {
-            self::Sent, self::Following, self::Negotiating, self::Approved, self::Expired => true,
-            self::Draft, self::Rejected, self::Cancelled => false,
+            self::Quoted, self::Negotiating, self::Won => true,
+            self::Requested, self::Rejected, self::Lost => false,
         };
     }
 
     public function acceptsFollowUps(): bool
     {
         return match ($this) {
-            self::Rejected, self::Cancelled => false,
+            self::Rejected, self::Lost => false,
             default => true,
+        };
+    }
+
+    public function requiresComment(): bool
+    {
+        return match ($this) {
+            self::Rejected, self::Lost => true,
+            default => false,
         };
     }
 
@@ -73,11 +75,10 @@ enum QuotationStatus: string
     public function transitions(): array
     {
         return match ($this) {
-            self::Draft => [self::Sent, self::Cancelled],
-            self::Sent => [self::Following, self::Negotiating, self::Approved, self::Rejected, self::Expired, self::Cancelled],
-            self::Following => [self::Sent, self::Negotiating, self::Approved, self::Rejected, self::Expired, self::Cancelled],
-            self::Negotiating => [self::Following, self::Approved, self::Rejected, self::Expired, self::Cancelled],
-            self::Approved, self::Rejected, self::Expired, self::Cancelled => [],
+            self::Requested => [self::Quoted, self::Rejected, self::Lost],
+            self::Quoted => [self::Negotiating, self::Rejected, self::Won, self::Lost],
+            self::Negotiating => [self::Quoted, self::Rejected, self::Won, self::Lost],
+            self::Rejected, self::Won, self::Lost => [],
         };
     }
 }

@@ -26,8 +26,8 @@ final class ConvertQuotationToOrder
 
     public function __invoke(Quotation $quotation, User $user): Order
     {
-        if ($quotation->status !== QuotationStatus::Approved) {
-            throw new CrmRuleException('Solo se puede convertir una cotización aprobada.');
+        if ($quotation->status !== QuotationStatus::Won) {
+            throw new CrmRuleException('Solo se puede convertir una cotización ganada.');
         }
 
         return DB::transaction(function () use ($quotation, $user) {

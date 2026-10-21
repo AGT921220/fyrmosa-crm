@@ -82,9 +82,19 @@ final class QuotationRules
                 'max:2000',
                 Rule::requiredIf(fn () => in_array(request()->input('status'), [
                     QuotationStatus::Rejected->value,
-                    QuotationStatus::Cancelled->value,
+                    QuotationStatus::Lost->value,
                 ], true)),
             ],
+        ];
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    public static function delete(): array
+    {
+        return [
+            'reason' => ['required', 'string', 'max:2000'],
         ];
     }
 

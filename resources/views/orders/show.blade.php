@@ -8,13 +8,16 @@
 @endsection
 @section('actions')
     @can('pdf', $order)
-        <a class="btn" href="{{ route('orders.pdf', $order) }}">Ver PDF</a>
-        <a class="btn" href="{{ route('orders.pdf', [$order, 'download' => 1]) }}">Descargar PDF</a>
+        <a class="btn" href="{{ route('orders.pdf', $order) }}" target="_blank" rel="noopener">Ver PDF</a>
+        <a class="btn" href="{{ route('orders.pdf', [$order, 'download' => 1]) }}" target="_blank" rel="noopener">Descargar PDF</a>
     @endcan
     @can('update', $order)
         @if ($order->status->isEditable())
             <a class="btn btn-primary" href="{{ route('orders.edit', $order) }}">Editar</a>
         @endif
+    @endcan
+    @can('delete', $order)
+        <button class="btn btn-outline-danger" type="button" data-bs-toggle="modal" data-bs-target="#delete-order-modal">Eliminar</button>
     @endcan
 @endsection
 @section('content')
@@ -35,7 +38,8 @@
                     <div class="col-md-4"><div class="text-secondary">Contacto</div><div>{{ $order->contactName() }}</div></div>
                     <div class="col-md-4"><div class="text-secondary">Correo</div><div>{{ $order->email }}</div></div>
                     <div class="col-md-4"><div class="text-secondary">Teléfono</div><div>{{ $order->phone }}</div></div>
-                    <div class="col-md-4"><div class="text-secondary">Folio del cliente</div><div>{{ $order->client_folio }}</div></div>
+                    <div class="col-md-4"><div class="text-secondary">Pedido de cliente</div><div>{{ $order->client_folio }}</div></div>
+                    <div class="col-md-4"><div class="text-secondary">Folio SAE</div><div>{{ $order->sae_folio }}</div></div>
                     <div class="col-md-3"><div class="text-secondary">Emisión</div><div>{{ $order->issued_on->format('d/m/Y') }}</div></div>
                     <div class="col-md-3"><div class="text-secondary">Entrega estimada</div><div>{{ $order->estimated_delivery_on?->format('d/m/Y') }}</div></div>
                     <div class="col-md-3"><div class="text-secondary">Responsable</div><div>{{ $order->user->name }}</div></div>
@@ -125,4 +129,27 @@
             </div>
         </div>
     </div>
+
+    @can('delete', $order)
+        <div class="modal modal-blur fade" id="delete-order-modal" tabindex="-1">
+            <div class="modal-dialog modal-sm modal-dialog-centered">
+                <form class="modal-content" method="POST" action="{{ route('orders.destroy', $order) }}">
+                    @csrf
+                    @method('DELETE')
+                    <div class="modal-header">
+                        <h5 class="modal-title">Eliminar pedido</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <label class="form-label" for="order-delete-reason">Motivo</label>
+                        <textarea class="form-control" id="order-delete-reason" name="reason" rows="3" required maxlength="2000"></textarea>
+                    </div>
+                    <div class="modal-footer">
+                        <button class="btn btn-link link-secondary" type="button" data-bs-dismiss="modal">Cancelar</button>
+                        <button class="btn btn-danger" type="submit">Eliminar</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    @endcan
 @endsection

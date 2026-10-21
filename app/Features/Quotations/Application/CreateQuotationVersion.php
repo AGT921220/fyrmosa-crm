@@ -23,7 +23,7 @@ final class CreateQuotationVersion
     public function __invoke(Quotation $source, User $user): Quotation
     {
         if (! $source->status->canVersion()) {
-            throw new CrmRuleException('Solo se puede versionar una cotización enviada, en seguimiento, en negociación, aprobada o vencida.');
+            throw new CrmRuleException('Solo se puede versionar una cotización cotizada, en negociación o ganada.');
         }
 
         return DB::transaction(function () use ($source, $user) {
@@ -35,8 +35,8 @@ final class CreateQuotationVersion
                 ->lockForUpdate()
                 ->get();
 
-            if ($chain->contains(fn (Quotation $quotation) => $quotation->status === QuotationStatus::Draft)) {
-                throw new CrmRuleException('Ya existe un borrador en esta cadena de versiones.');
+            if ($chain->contains(fn (Quotation $quotation) => $quotation->status === QuotationStatus::Requested)) {
+                throw new CrmRuleException('Ya existe una cotización solicitada en esta cadena de versiones.');
             }
 
             $source->load('items');
@@ -66,7 +66,7 @@ final class CreateQuotationVersion
                 'delivery_time' => $source->delivery_time,
                 'internal_notes' => $source->internal_notes,
                 'client_notes' => $source->client_notes,
-                'status' => QuotationStatus::Draft,
+                'status' => QuotationStatus::Requested,
                 'subtotal' => $source->subtotal,
                 'discount_total' => $source->discount_total,
                 'tax_total' => $source->tax_total,

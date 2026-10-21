@@ -41,7 +41,7 @@ class QuotationTest extends TestCase
         $this->assertSame('25.00', $first->discount_total);
         $this->assertSame('28.80', $first->tax_total);
         $this->assertSame('253.80', $first->total);
-        $this->assertSame(QuotationStatus::Draft, $first->status);
+        $this->assertSame(QuotationStatus::Requested, $first->status);
         $this->assertDatabaseHas('activity_logs', [
             'subject_id' => $first->id,
             'action' => ActivityAction::Created->value,
@@ -73,6 +73,34 @@ class QuotationTest extends TestCase
         $this->assertSame(0, Quotation::query()->count());
     }
 
+    public function test_requires_client_and_contact_on_create_and_update(): void
+    {
+        $sales = $this->userWithRole(Role::Vendedor);
+
+        $this->actingAs($sales)
+            ->from(route('quotations.create'))
+            ->post(route('quotations.store'), $this->quotationPayload($sales, [
+                'client_id' => null,
+                'contact_id' => null,
+            ]))
+            ->assertRedirect(route('quotations.create'))
+            ->assertSessionHasErrors(['client_id', 'contact_id']);
+
+        $this->assertSame(0, Quotation::query()->count());
+
+        $this->actingAs($sales)->post(route('quotations.store'), $this->quotationPayload($sales));
+        $quotation = Quotation::query()->firstOrFail();
+
+        $this->actingAs($sales)
+            ->from(route('quotations.edit', $quotation))
+            ->put(route('quotations.update', $quotation), $this->quotationPayload($sales, [
+                'client_id' => '',
+                'contact_id' => '',
+            ]))
+            ->assertRedirect(route('quotations.edit', $quotation))
+            ->assertSessionHasErrors(['client_id', 'contact_id']);
+    }
+
     public function test_status_transitions_follow_ups_versions_and_history(): void
     {
         $sales = $this->userWithRole(Role::Vendedor);
@@ -80,13 +108,13 @@ class QuotationTest extends TestCase
         $quotation = Quotation::query()->first();
 
         $this->actingAs($sales)
-            ->post(route('quotations.status', $quotation), ['status' => 'aprobada', 'comment' => 'Directo'])
+            ->post(route('quotations.status', $quotation), ['status' => 'ganada', 'comment' => 'Directo'])
             ->assertRedirect()
             ->assertSessionHas('error');
-        $this->assertSame(QuotationStatus::Draft, $quotation->fresh()->status);
+        $this->assertSame(QuotationStatus::Requested, $quotation->fresh()->status);
 
         $this->actingAs($sales)
-            ->post(route('quotations.status', $quotation), ['status' => 'enviada', 'comment' => 'Enviada por correo'])
+            ->post(route('quotations.status', $quotation), ['status' => 'cotizada', 'comment' => 'Enviada por correo'])
             ->assertRedirect()
             ->assertSessionHas('success');
 
@@ -127,13 +155,13 @@ class QuotationTest extends TestCase
 
         $version = Quotation::query()->where('version_number', 2)->first();
         $this->assertSame('COT-000001-V2', $version->folio);
-        $this->assertSame(QuotationStatus::Draft, $version->status);
-        $this->assertSame(QuotationStatus::Sent, $quotation->fresh()->status);
+        $this->assertSame(QuotationStatus::Requested, $version->status);
+        $this->assertSame(QuotationStatus::Quoted, $quotation->fresh()->status);
         $this->assertSame('80.00', $quotation->fresh()->total);
         $this->assertTrue(QuotationVersion::query()->where('quotation_id', $quotation->id)->exists());
 
         $this->actingAs($sales)
-            ->post(route('quotations.status', $quotation), ['status' => 'aprobada'])
+            ->post(route('quotations.status', $quotation), ['status' => 'ganada'])
             ->assertRedirect();
 
         $this->actingAs($sales)
@@ -143,10 +171,34 @@ class QuotationTest extends TestCase
         $this->assertSame('80.00', $quotation->fresh()->total);
     }
 
-    public function test_converts_an_approved_quotation_once(): void
+    public function test_lost_requires_a_reason(): void
     {
         $sales = $this->userWithRole(Role::Vendedor);
-        $quotation = $this->approvedQuotation($sales);
+        $this->actingAs($sales)->post(route('quotations.store'), $this->quotationPayload($sales));
+        $quotation = Quotation::query()->first();
+        $this->actingAs($sales)->post(route('quotations.status', $quotation), ['status' => 'cotizada']);
+
+        $this->actingAs($sales)
+            ->from(route('quotations.show', $quotation))
+            ->post(route('quotations.status', $quotation), ['status' => 'perdida'])
+            ->assertRedirect()
+            ->assertSessionHasErrors('comment');
+
+        $this->actingAs($sales)
+            ->post(route('quotations.status', $quotation), [
+                'status' => 'perdida',
+                'comment' => 'El cliente eligió otro proveedor',
+            ])
+            ->assertRedirect()
+            ->assertSessionHas('success');
+
+        $this->assertSame(QuotationStatus::Lost, $quotation->fresh()->status);
+    }
+
+    public function test_converts_a_won_quotation_once(): void
+    {
+        $sales = $this->userWithRole(Role::Vendedor);
+        $quotation = $this->wonQuotation($sales);
 
         $this->actingAs($sales)
             ->post(route('quotations.convert', $quotation))
@@ -166,7 +218,7 @@ class QuotationTest extends TestCase
         $this->assertSame(1, $quotation->order()->count());
     }
 
-    public function test_expires_sent_quotations_past_their_date(): void
+    public function test_expires_quoted_quotations_past_their_date(): void
     {
         $sales = $this->userWithRole(Role::Vendedor);
         $this->actingAs($sales)->post(route('quotations.store'), $this->quotationPayload($sales, [
@@ -174,15 +226,47 @@ class QuotationTest extends TestCase
             'expires_on' => '2026-09-15',
         ]));
         $quotation = Quotation::query()->first();
-        $this->actingAs($sales)->post(route('quotations.status', $quotation), ['status' => 'enviada']);
+        $this->actingAs($sales)->post(route('quotations.status', $quotation), ['status' => 'cotizada']);
 
         $this->artisan('crm:expire-quotations')->assertSuccessful();
 
-        $this->assertSame(QuotationStatus::Expired, $quotation->fresh()->status);
+        $this->assertSame(QuotationStatus::Lost, $quotation->fresh()->status);
         $this->assertDatabaseHas('activity_logs', [
             'subject_id' => $quotation->id,
             'action' => ActivityAction::StatusChanged->value,
-            'comment' => 'Vencida por fecha de vencimiento.',
+            'comment' => 'Perdida por fecha de vencimiento.',
+        ]);
+    }
+
+    public function test_only_admin_can_soft_delete_a_quotation_with_reason(): void
+    {
+        $sales = $this->userWithRole(Role::Vendedor);
+        $admin = $this->userWithRole(Role::Admin);
+        $this->actingAs($sales)->post(route('quotations.store'), $this->quotationPayload($sales));
+        $quotation = Quotation::query()->first();
+
+        $this->actingAs($sales)
+            ->delete(route('quotations.destroy', $quotation), ['reason' => 'Error de captura'])
+            ->assertForbidden();
+
+        $this->actingAs($admin)
+            ->from(route('quotations.show', $quotation))
+            ->delete(route('quotations.destroy', $quotation))
+            ->assertRedirect()
+            ->assertSessionHasErrors('reason');
+
+        $this->actingAs($admin)
+            ->delete(route('quotations.destroy', $quotation), ['reason' => 'Duplicada por error'])
+            ->assertRedirect(route('quotations.index'));
+
+        $this->assertSoftDeleted($quotation);
+        $deleted = Quotation::withTrashed()->findOrFail($quotation->id);
+        $this->assertSame('Duplicada por error', $deleted->deleted_reason);
+        $this->assertSame($admin->id, $deleted->deleted_by);
+        $this->assertDatabaseHas('activity_logs', [
+            'subject_id' => $quotation->id,
+            'action' => ActivityAction::Deleted->value,
+            'comment' => 'Duplicada por error',
         ]);
     }
 
@@ -198,12 +282,12 @@ class QuotationTest extends TestCase
             ->assertHeader('content-type', 'application/pdf');
     }
 
-    private function approvedQuotation(User $sales): Quotation
+    private function wonQuotation(User $sales): Quotation
     {
         $this->actingAs($sales)->post(route('quotations.store'), $this->quotationPayload($sales));
         $quotation = Quotation::query()->first();
-        $this->actingAs($sales)->post(route('quotations.status', $quotation), ['status' => 'enviada']);
-        $this->actingAs($sales)->post(route('quotations.status', $quotation), ['status' => 'aprobada']);
+        $this->actingAs($sales)->post(route('quotations.status', $quotation), ['status' => 'cotizada']);
+        $this->actingAs($sales)->post(route('quotations.status', $quotation), ['status' => 'ganada']);
 
         return $quotation->fresh();
     }

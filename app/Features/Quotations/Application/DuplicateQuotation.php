@@ -47,7 +47,7 @@ final class DuplicateQuotation
                 'delivery_time' => $source->delivery_time,
                 'internal_notes' => $source->internal_notes,
                 'client_notes' => $source->client_notes,
-                'status' => QuotationStatus::Draft,
+                'status' => QuotationStatus::Requested,
                 'subtotal' => $source->subtotal,
                 'discount_total' => $source->discount_total,
                 'tax_total' => $source->tax_total,

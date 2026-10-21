@@ -24,12 +24,12 @@ Zona horaria: `America/Mexico_City`. Idioma: español.
 
 - **Clientes.** Catálogo con varios contactos (nombre, apellido, teléfono y correo).
 - **Cotizaciones.** Folio, conceptos, estados, seguimiento, versiones, PDF y conversión a pedido. Exigen cliente y un contacto. El formulario muestra la copia del contacto sin editarla.
-- **Pedidos.** Alta directa o desde una cotización aprobada, entregas parciales, PDF e histórico. Folio `PED-000001`. También exigen cliente y contacto.
+- **Pedidos.** Alta directa o desde una cotización ganada, entregas parciales, PDF e histórico. Folio `PED-000001`. También exigen cliente y contacto.
 - **Dashboard.** Conteos y montos por moneda, con filtros.
 
 ## Estados
 
-Cotización: borrador, enviada, en seguimiento, en negociación, aprobada, rechazada, vencida, cancelada.
+Cotización: solicitada, cotizada, en negociación, rechazada, ganada, perdida. Rechazada y perdida requieren motivo.
 
 Pedido: borrador, pendiente de confirmación, confirmada, en proceso, parcialmente entregada, completada, cancelada.
 
@@ -94,7 +94,8 @@ El panel `/users` y `/roles` asigna el rol y permisos directos. `users.role` gua
 | Folio | `COT-000001` o `PED-000001`. Una versión posterior usa el mismo consecutivo: `COT-000001-V2` |
 | Subtotal | Suma de conceptos después del descuento y antes del impuesto |
 | Instantánea | JSON en `quotation_versions` al aprobar o al crear otra versión |
-| Conversión | Copia de la cotización aprobada a un pedido propio |
+| Conversión | Copia de la cotización ganada a un pedido propio |
+| Eliminación | Soft delete de cotización o pedido; solo admin; motivo obligatorio |
 
 ## Fuera de alcance
 
