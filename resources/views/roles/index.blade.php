@@ -19,15 +19,6 @@
                                 @can('update', $role)
                                     <a class="btn btn-sm" href="{{ route('roles.edit', $role) }}">Editar</a>
                                 @endcan
-                                @can('delete', $role)
-                                    @unless (\App\Enums\Role::isBuiltIn($role->name))
-                                        <form class="d-inline" method="POST" action="{{ route('roles.destroy', $role) }}">
-                                            @csrf
-                                            @method('DELETE')
-                                            <button class="btn btn-sm btn-outline-danger" type="submit">Eliminar</button>
-                                        </form>
-                                    @endunless
-                                @endcan
                             </td>
                         </tr>
                     @empty

@@ -45,7 +45,6 @@ enum Permission: string
     case RolesView = 'roles.view';
     case RolesCreate = 'roles.create';
     case RolesUpdate = 'roles.update';
-    case RolesDelete = 'roles.delete';
 
     public function label(): string
     {
@@ -84,7 +83,6 @@ enum Permission: string
             self::RolesView => 'Ver roles',
             self::RolesCreate => 'Crear roles',
             self::RolesUpdate => 'Editar roles',
-            self::RolesDelete => 'Eliminar roles',
         };
     }
 

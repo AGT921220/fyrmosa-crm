@@ -26,7 +26,7 @@ Route::middleware('auth')->group(function () {
     Route::get('dashboard', DashboardController::class)->name('dashboard');
 
     Route::resource('users', UserController::class)->except(['show']);
-    Route::resource('roles', RoleController::class)->except(['show']);
+    Route::resource('roles', RoleController::class)->except(['show', 'destroy']);
 
     Route::resource('clients', ClientController::class)->except(['show']);
 

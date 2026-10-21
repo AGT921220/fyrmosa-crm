@@ -54,7 +54,7 @@ Recetas de este repositorio. Las clases citadas son las de referencia.
 
 1. Usuario: `StoreUserRequest` / `UpdateUserRequest` y `SaveUser`. El rol principal queda en `users.role`.
 2. Rol: `StoreRoleRequest` / `UpdateRoleRequest` y `SaveRole`. Un rol de sistema no cambia de nombre.
-3. `DeleteUser` y `DeleteRole` rechazan borrar al dueño (`nickname` `superadmin`), al último superadmin o un rol de sistema. El listado de usuarios usa `withoutOwner()`.
+3. `DeleteUser` rechaza borrar al dueño (`nickname` `superadmin`) o al último superadmin. Los roles no se eliminan (sin ruta destroy ni permiso `roles.delete`). El listado de usuarios usa `withoutOwner()`.
 4. Vistas en `resources/views/users` y `resources/views/roles`. El nav solo muestra el enlace con permiso.
 5. Prueba en `tests/Feature/AccessTest.php`.
 

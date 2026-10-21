@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Http\Controllers;
 
 use App\Enums\Role;
-use App\Features\Access\Application\DeleteRole;
 use App\Features\Access\Application\SaveRole;
 use App\Http\Requests\StoreRoleRequest;
 use App\Http\Requests\UpdateRoleRequest;
@@ -54,13 +53,5 @@ class RoleController extends Controller
         $save($role, $request->validated());
 
         return redirect()->route('roles.index')->with('success', 'Rol actualizado.');
-    }
-
-    public function destroy(RoleModel $role, DeleteRole $delete): RedirectResponse
-    {
-        $this->authorize('delete', $role);
-        $delete($role);
-
-        return redirect()->route('roles.index')->with('success', 'Rol eliminado.');
     }
 }

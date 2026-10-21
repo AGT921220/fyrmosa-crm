@@ -63,12 +63,14 @@ class AccessTest extends TestCase
         $this->actingAs($ana)->get(route('users.index'))->assertForbidden();
         $this->actingAs($ana)->get(route('dashboard'))->assertForbidden();
 
-        $vendedor = RoleModel::findByName('vendedor');
         $this->actingAs($superadmin)
-            ->from(route('roles.index'))
-            ->delete(route('roles.destroy', $vendedor))
-            ->assertRedirect(route('roles.index'))
-            ->assertSessionHas('error');
+            ->get(route('roles.index'))
+            ->assertOk()
+            ->assertDontSee('Eliminar');
+
+        $custom = RoleModel::findByName('almacen');
+        $this->actingAs($superadmin)->delete('/roles/'.$custom->id)->assertMethodNotAllowed();
+        $this->assertDatabaseHas('roles', ['name' => 'almacen']);
         $this->assertDatabaseHas('roles', ['name' => 'vendedor']);
     }
 
