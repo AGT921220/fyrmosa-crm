@@ -159,7 +159,7 @@ class OrderController extends Controller
     private function formData(): array
     {
         return [
-            'clients' => Client::query()->with('contacts')->orderBy('name')->get(),
+            'clients' => Client::query()->with('contacts.phones')->orderBy('name')->get(),
             'users' => User::query()->withoutOwner()->orderBy('name')->get(['id', 'name']),
             'currencies' => Currency::cases(),
         ];

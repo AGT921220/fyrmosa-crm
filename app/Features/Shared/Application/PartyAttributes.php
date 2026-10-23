@@ -14,7 +14,7 @@ final class PartyAttributes
      */
     public static function capture(int $clientId, int $contactId): array
     {
-        $contact = Contact::query()->with('client')->find($contactId);
+        $contact = Contact::query()->with(['client', 'phones'])->find($contactId);
 
         if ($contact === null || $contact->client === null || (int) $contact->client_id !== $clientId) {
             throw new CrmRuleException('El contacto no pertenece al cliente seleccionado.');
@@ -28,7 +28,7 @@ final class PartyAttributes
             'contact_first_name' => $contact->first_name,
             'contact_last_name' => $contact->last_name,
             'email' => $contact->email,
-            'phone' => $contact->phone,
+            'phone' => $contact->primaryPhone(),
         ];
     }
 }

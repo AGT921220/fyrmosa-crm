@@ -31,9 +31,9 @@ trait CreatesCrmUsers
         $contact = $client->contacts()->create([
             'first_name' => 'Ana',
             'last_name' => 'López',
-            'phone' => '5555555555',
             'email' => 'ana@demo.test',
         ]);
+        $contact->phones()->create(['phone' => '5555555555']);
 
         $payload = [
             'client_id' => $client->id,

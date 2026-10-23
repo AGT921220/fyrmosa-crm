@@ -38,7 +38,7 @@ Nginx, PHP-FPM 8.4, Horizon, el scheduler, MySQL 8.4, Redis y phpMyAdmin viven e
 
 ## ADR-011 — Pedidos y contactos
 
-El módulo de órdenes de compra se llama pedidos: tabla `orders`, modelo `Order`, folio `PED`. Un cliente tiene varios contactos. Cotización y pedido exigen `client_id` y `contact_id`. Al guardar se copia el cliente y el contacto; el formulario no deja editar esa copia.
+El módulo de órdenes de compra se llama pedidos: tabla `orders`, modelo `Order`, folio `PED`. Un cliente tiene varios contactos. Cada contacto tiene puesto, comentario y uno o más teléfonos en `contact_phones`. Cotización y pedido exigen `client_id` y `contact_id`. Al guardar se copia el cliente y el contacto (correo y teléfono principal); el formulario no deja editar esa copia.
 
 ## ADR-009 — Folios con bloqueo
 

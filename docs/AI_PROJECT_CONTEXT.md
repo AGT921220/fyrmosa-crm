@@ -22,7 +22,7 @@ Zona horaria: `America/Mexico_City`. Idioma: español.
 
 ## Módulos
 
-- **Clientes.** Catálogo con varios contactos (nombre, apellido, teléfono y correo).
+- **Clientes.** Catálogo con varios contactos (nombre, apellido, puesto, correo, comentario y uno o más teléfonos en `contact_phones`).
 - **Cotizaciones.** Folio, conceptos, estados, seguimiento, versiones, PDF y conversión a pedido. Exigen cliente y un contacto. El formulario muestra la copia del contacto sin editarla.
 - **Pedidos.** Alta directa o desde una cotización ganada, entregas parciales, PDF e histórico. Folio `PED-000001`. También exigen cliente y contacto.
 - **Dashboard.** Conteos y montos por moneda, con filtros.
@@ -36,7 +36,7 @@ Pedido: borrador, pendiente de confirmación, confirmada, en proceso, parcialmen
 ## Relaciones
 
 - `Client` 1—N `Contact`, `Quotation` y `Order`.
-- `Contact` pertenece a un cliente. La cotización y el pedido apuntan a un contacto y guardan su copia.
+- `Contact` pertenece a un cliente y tiene 1—N `ContactPhone`. La cotización y el pedido apuntan a un contacto y copian correo y el teléfono principal.
 - `Quotation` 1—N `QuotationItem`, 1—N `QuotationVersion`, 0—1 `Order`.
 - Una versión apunta a `parent_id` y al origen `root_id`.
 - `FollowUp`, `ActivityLog` y `Attachment` son polimórficos sobre cotización y pedido (`order`).

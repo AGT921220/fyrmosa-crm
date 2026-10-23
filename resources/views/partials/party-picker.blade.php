@@ -11,7 +11,7 @@
             'id' => $contact->id,
             'first_name' => $contact->first_name,
             'last_name' => $contact->last_name,
-            'phone' => $contact->phone,
+            'phone' => $contact->phonesList(),
             'email' => $contact->email,
         ])->values(),
     ])->values();
@@ -45,7 +45,7 @@
 </div>
 <div class="col-md-3">
     <label class="form-label" for="party-phone">Teléfono</label>
-    <input class="form-control" id="party-phone" value="{{ $selectedContact->phone ?? '' }}" readonly>
+    <input class="form-control" id="party-phone" value="{{ $selectedContact?->phonesList() ?? '' }}" readonly>
 </div>
 <div class="col-md-3">
     <label class="form-label" for="party-email">Correo</label>

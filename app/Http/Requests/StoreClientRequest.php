@@ -25,8 +25,11 @@ class StoreClientRequest extends FormRequest
             'contacts.*.id' => ['nullable', 'integer'],
             'contacts.*.first_name' => ['required', 'string', 'max:255'],
             'contacts.*.last_name' => ['required', 'string', 'max:255'],
-            'contacts.*.phone' => ['required', 'string', 'max:40'],
+            'contacts.*.puesto' => ['nullable', 'string', 'max:255'],
             'contacts.*.email' => ['required', 'email', 'max:255'],
+            'contacts.*.comentario' => ['nullable', 'string'],
+            'contacts.*.phones' => ['required', 'array', 'min:1'],
+            'contacts.*.phones.*' => ['required', 'string', 'max:40'],
         ];
     }
 
@@ -41,8 +44,11 @@ class StoreClientRequest extends FormRequest
             'contacts' => 'contactos',
             'contacts.*.first_name' => 'nombre del contacto',
             'contacts.*.last_name' => 'apellido del contacto',
-            'contacts.*.phone' => 'teléfono del contacto',
+            'contacts.*.puesto' => 'puesto del contacto',
             'contacts.*.email' => 'correo del contacto',
+            'contacts.*.comentario' => 'comentario del contacto',
+            'contacts.*.phones' => 'teléfonos del contacto',
+            'contacts.*.phones.*' => 'teléfono del contacto',
         ];
     }
 }

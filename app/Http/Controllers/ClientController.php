@@ -39,7 +39,7 @@ class ClientController extends Controller
     public function edit(Client $client): View
     {
         $this->authorize('update', $client);
-        $client->load('contacts');
+        $client->load('contacts.phones');
 
         return view('clients.edit', ['client' => $client]);
     }

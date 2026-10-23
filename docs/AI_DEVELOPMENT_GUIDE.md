@@ -33,7 +33,7 @@ Recetas de este repositorio. Las clases citadas son las de referencia.
 
 ## Cliente y contactos
 
-`SaveClient` guarda el cliente y sincroniza la lista `contacts`. No elimina un contacto que ya está en una cotización o un pedido.
+`SaveClient` guarda el cliente y sincroniza la lista `contacts` (con `puesto`, `comentario` y `phones` mínimo 1). No elimina un contacto que ya está en una cotización o un pedido.
 
 ## Pedido y entrega
 

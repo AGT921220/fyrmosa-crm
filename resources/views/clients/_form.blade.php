@@ -7,10 +7,20 @@
                 'id' => $contact->id,
                 'first_name' => $contact->first_name,
                 'last_name' => $contact->last_name,
-                'phone' => $contact->phone,
+                'puesto' => $contact->puesto,
                 'email' => $contact->email,
+                'comentario' => $contact->comentario,
+                'phones' => $contact->phones->pluck('phone')->all() ?: [''],
             ])->all()
-            : [['id' => '', 'first_name' => '', 'last_name' => '', 'phone' => '', 'email' => '']];
+            : [[
+                'id' => '',
+                'first_name' => '',
+                'last_name' => '',
+                'puesto' => '',
+                'email' => '',
+                'comentario' => '',
+                'phones' => [''],
+            ]];
     }
 @endphp
 <form method="POST" action="{{ $client ? route('clients.update', $client) : route('clients.store') }}">
@@ -31,13 +41,30 @@
         </div>
         <div class="card-body" id="contacts">
             @foreach ($rows as $index => $row)
-                <div class="row g-3 contact-row mb-3">
-                    <input type="hidden" name="contacts[{{ $index }}][id]" value="{{ $row['id'] ?? '' }}">
-                    <div class="col-md-3"><label class="form-label">Nombre</label><input class="form-control" name="contacts[{{ $index }}][first_name]" value="{{ $row['first_name'] ?? '' }}" required></div>
-                    <div class="col-md-3"><label class="form-label">Apellido</label><input class="form-control" name="contacts[{{ $index }}][last_name]" value="{{ $row['last_name'] ?? '' }}" required></div>
-                    <div class="col-md-2"><label class="form-label">Teléfono</label><input class="form-control" name="contacts[{{ $index }}][phone]" value="{{ $row['phone'] ?? '' }}" required></div>
-                    <div class="col-md-3"><label class="form-label">Correo</label><input class="form-control" type="email" name="contacts[{{ $index }}][email]" value="{{ $row['email'] ?? '' }}" required></div>
-                    <div class="col-md-1 d-flex align-items-end"><button class="btn btn-outline-danger w-100" type="button" data-remove-contact>Quitar</button></div>
+                <div class="border rounded p-3 contact-row mb-3">
+                    <input type="hidden" data-name="id" value="{{ $row['id'] ?? '' }}">
+                    <div class="row g-3">
+                        <div class="col-md-3"><label class="form-label">Nombre</label><input class="form-control" data-name="first_name" value="{{ $row['first_name'] ?? '' }}" required></div>
+                        <div class="col-md-3"><label class="form-label">Apellido</label><input class="form-control" data-name="last_name" value="{{ $row['last_name'] ?? '' }}" required></div>
+                        <div class="col-md-3"><label class="form-label">Puesto</label><input class="form-control" data-name="puesto" value="{{ $row['puesto'] ?? '' }}"></div>
+                        <div class="col-md-3"><label class="form-label">Correo</label><input class="form-control" type="email" data-name="email" value="{{ $row['email'] ?? '' }}" required></div>
+                        <div class="col-md-9"><label class="form-label">Comentario</label><textarea class="form-control" data-name="comentario" rows="2">{{ $row['comentario'] ?? '' }}</textarea></div>
+                        <div class="col-md-3 d-flex align-items-end"><button class="btn btn-outline-danger w-100" type="button" data-remove-contact>Quitar contacto</button></div>
+                        <div class="col-12">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <label class="form-label mb-0">Teléfonos</label>
+                                <button class="btn btn-sm btn-outline-primary" type="button" data-add-phone>Agregar teléfono</button>
+                            </div>
+                            <div data-phones>
+                                @foreach (($row['phones'] ?? ['']) as $phone)
+                                    <div class="input-group mb-2 phone-row">
+                                        <input class="form-control" data-phone value="{{ $phone }}" required>
+                                        <button class="btn btn-outline-danger" type="button" data-remove-phone>Quitar</button>
+                                    </div>
+                                @endforeach
+                            </div>
+                        </div>
+                    </div>
                 </div>
             @endforeach
         </div>
@@ -45,13 +72,28 @@
     </div>
 </form>
 <template id="contact-template">
-    <div class="row g-3 contact-row mb-3">
+    <div class="border rounded p-3 contact-row mb-3">
         <input type="hidden" data-name="id" value="">
-        <div class="col-md-3"><label class="form-label">Nombre</label><input class="form-control" data-name="first_name" required></div>
-        <div class="col-md-3"><label class="form-label">Apellido</label><input class="form-control" data-name="last_name" required></div>
-        <div class="col-md-2"><label class="form-label">Teléfono</label><input class="form-control" data-name="phone" required></div>
-        <div class="col-md-3"><label class="form-label">Correo</label><input class="form-control" type="email" data-name="email" required></div>
-        <div class="col-md-1 d-flex align-items-end"><button class="btn btn-outline-danger w-100" type="button" data-remove-contact>Quitar</button></div>
+        <div class="row g-3">
+            <div class="col-md-3"><label class="form-label">Nombre</label><input class="form-control" data-name="first_name" required></div>
+            <div class="col-md-3"><label class="form-label">Apellido</label><input class="form-control" data-name="last_name" required></div>
+            <div class="col-md-3"><label class="form-label">Puesto</label><input class="form-control" data-name="puesto"></div>
+            <div class="col-md-3"><label class="form-label">Correo</label><input class="form-control" type="email" data-name="email" required></div>
+            <div class="col-md-9"><label class="form-label">Comentario</label><textarea class="form-control" data-name="comentario" rows="2"></textarea></div>
+            <div class="col-md-3 d-flex align-items-end"><button class="btn btn-outline-danger w-100" type="button" data-remove-contact>Quitar contacto</button></div>
+            <div class="col-12">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <label class="form-label mb-0">Teléfonos</label>
+                    <button class="btn btn-sm btn-outline-primary" type="button" data-add-phone>Agregar teléfono</button>
+                </div>
+                <div data-phones>
+                    <div class="input-group mb-2 phone-row">
+                        <input class="form-control" data-phone required>
+                        <button class="btn btn-outline-danger" type="button" data-remove-phone>Quitar</button>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 </template>
 @push('scripts')
@@ -61,9 +103,14 @@
 
     const reindex = () => {
         [...contacts.querySelectorAll('.contact-row')].forEach((row, index) => {
-            row.querySelectorAll('[name], [data-name]').forEach((field) => {
-                const key = field.dataset.name || field.name.replace(/contacts\[\d+\]\[(\w+)\]/, '$1');
-                field.name = `contacts[${index}][${key}]`;
+            row.querySelectorAll('[data-name]').forEach((field) => {
+                field.name = `contacts[${index}][${field.dataset.name}]`;
+            });
+            [...row.querySelectorAll('[data-phones] .phone-row')].forEach((phoneRow, phoneIndex) => {
+                const input = phoneRow.querySelector('[data-phone]');
+                if (input) {
+                    input.name = `contacts[${index}][phones][${phoneIndex}]`;
+                }
             });
         });
     };
@@ -74,12 +121,39 @@
     });
 
     contacts.addEventListener('click', (event) => {
-        const button = event.target.closest('[data-remove-contact]');
-        if (!button || contacts.querySelectorAll('.contact-row').length === 1) {
+        const removeContact = event.target.closest('[data-remove-contact]');
+        if (removeContact) {
+            if (contacts.querySelectorAll('.contact-row').length === 1) {
+                return;
+            }
+            removeContact.closest('.contact-row').remove();
+            reindex();
             return;
         }
-        button.closest('.contact-row').remove();
+
+        const addPhone = event.target.closest('[data-add-phone]');
+        if (addPhone) {
+            const phones = addPhone.closest('.contact-row').querySelector('[data-phones]');
+            const phoneRow = document.createElement('div');
+            phoneRow.className = 'input-group mb-2 phone-row';
+            phoneRow.innerHTML = '<input class="form-control" data-phone required><button class="btn btn-outline-danger" type="button" data-remove-phone>Quitar</button>';
+            phones.appendChild(phoneRow);
+            reindex();
+            return;
+        }
+
+        const removePhone = event.target.closest('[data-remove-phone]');
+        if (!removePhone) {
+            return;
+        }
+        const phones = removePhone.closest('[data-phones]');
+        if (phones.querySelectorAll('.phone-row').length === 1) {
+            return;
+        }
+        removePhone.closest('.phone-row').remove();
         reindex();
     });
+
+    reindex();
 </script>
 @endpush

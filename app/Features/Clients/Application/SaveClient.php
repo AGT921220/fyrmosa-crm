@@ -6,6 +6,7 @@ namespace App\Features\Clients\Application;
 
 use App\Exceptions\CrmRuleException;
 use App\Models\Client;
+use App\Models\Contact;
 use Illuminate\Support\Facades\DB;
 
 final class SaveClient
@@ -29,7 +30,7 @@ final class SaveClient
 
             $this->syncContacts($client, $data['contacts']);
 
-            return $client->load('contacts');
+            return $client->load('contacts.phones');
         });
     }
 
@@ -44,8 +45,9 @@ final class SaveClient
             $attributes = [
                 'first_name' => $row['first_name'],
                 'last_name' => $row['last_name'],
-                'phone' => $row['phone'],
+                'puesto' => $row['puesto'] ?? null,
                 'email' => $row['email'],
+                'comentario' => $row['comentario'] ?? null,
             ];
 
             if (! empty($row['id'])) {
@@ -54,12 +56,15 @@ final class SaveClient
                     throw new CrmRuleException('El contacto no pertenece a este cliente.');
                 }
                 $contact->update($attributes);
+                $this->syncPhones($contact, $row['phones']);
                 $kept[] = $contact->id;
 
                 continue;
             }
 
-            $kept[] = $client->contacts()->create($attributes)->id;
+            $contact = $client->contacts()->create($attributes);
+            $this->syncPhones($contact, $row['phones']);
+            $kept[] = $contact->id;
         }
 
         foreach ($client->contacts()->whereNotIn('id', $kept)->get() as $contact) {
@@ -68,6 +73,18 @@ final class SaveClient
             }
 
             $contact->delete();
+        }
+    }
+
+    /**
+     * @param  list<string>  $phones
+     */
+    private function syncPhones(Contact $contact, array $phones): void
+    {
+        $contact->phones()->delete();
+
+        foreach ($phones as $phone) {
+            $contact->phones()->create(['phone' => $phone]);
         }
     }
 }

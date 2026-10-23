@@ -23,7 +23,7 @@ Reglas cortas para trabajar en este repositorio. El código de este proyecto es 
 19. Autoriza en FormRequest o Policy. No confíes solo en ocultar el botón.
 20. Estados en enums: `QuotationStatus` y `OrderStatus`. No compares strings sueltos si ya tienes el enum.
 21. Busca el caso de uso equivalente antes de crear otro: cotización para el flujo comercial, pedido para entregas.
-22. Cliente y contacto son obligatorios al crear una cotización o un pedido. El documento guarda una copia de nombre, razón social, contacto, correo y teléfono. El formulario solo muestra esa copia.
+22. Cliente y contacto son obligatorios al crear una cotización o un pedido. El contacto tiene puesto, comentario y uno o más teléfonos en `contact_phones` (mínimo 1). El documento guarda una copia de nombre, razón social, contacto, correo y el teléfono principal. El formulario solo muestra esa copia.
 23. Seguimientos, adjuntos e histórico son polimórficos (`follow_ups`, `attachments`, `activity_logs`).
 24. Vistas en `resources/views`, layout `layouts/app.blade.php`, estilos Tabler. No introduzcas Tailwind, React, Vue ni Livewire en el panel.
 25. El listado es una tabla Blade con filtros y paginación Bootstrap. No hace falta DataTables.

@@ -14,13 +14,19 @@ class Contact extends Model
         'client_id',
         'first_name',
         'last_name',
-        'phone',
+        'puesto',
         'email',
+        'comentario',
     ];
 
     public function client(): BelongsTo
     {
         return $this->belongsTo(Client::class);
+    }
+
+    public function phones(): HasMany
+    {
+        return $this->hasMany(ContactPhone::class)->orderBy('id');
     }
 
     public function quotations(): HasMany
@@ -36,5 +42,15 @@ class Contact extends Model
     public function fullName(): string
     {
         return trim($this->first_name.' '.$this->last_name);
+    }
+
+    public function primaryPhone(): string
+    {
+        return (string) ($this->phones->first()?->phone ?? '');
+    }
+
+    public function phonesList(): string
+    {
+        return $this->phones->pluck('phone')->filter()->implode(' / ');
     }
 }
