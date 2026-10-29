@@ -23,6 +23,8 @@ Homestead.json
 .phpunit.result.cache
 /.phpunit.cache
 
+docker/nginx/logs
+
 /public/build
 /storage/pail
 .env.backup
