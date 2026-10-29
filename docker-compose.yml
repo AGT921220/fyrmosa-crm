@@ -96,10 +96,10 @@ services:
       - --character-set-server=utf8mb4
       - --collation-server=utf8mb4_unicode_ci
     environment:
-      MYSQL_ROOT_PASSWORD: root
-      MYSQL_DATABASE: db
-      MYSQL_USER: user
-      MYSQL_PASSWORD: password
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:?Define DB_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${DB_DATABASE:?Define DB_DATABASE}
+      MYSQL_USER: ${DB_USERNAME:?Define DB_USERNAME}
+      MYSQL_PASSWORD: ${DB_PASSWORD:?Define DB_PASSWORD}
     ports:
       - "${PORT_MYSQL:-4310}:3306"
     volumes:
