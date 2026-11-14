@@ -6,6 +6,7 @@ namespace App\Features\Orders\Application;
 
 use App\Enums\ActivityAction;
 use App\Enums\OrderStatus;
+use App\Enums\Permission;
 use App\Exceptions\CrmRuleException;
 use App\Features\Shared\Application\RecordActivity;
 use App\Models\Order;
@@ -19,7 +20,14 @@ final class ChangeOrderStatus
 
     public function __invoke(Order $order, OrderStatus $status, User $user, ?string $comment = null): Order
     {
-        if (! in_array($status, $order->status->transitions(), true)) {
+        if ($status === $order->status) {
+            throw new CrmRuleException('El pedido ya está '.$status->label().'.');
+        }
+
+        $allowed = $user->hasPermission(Permission::OrdersOverrideStatus)
+            || in_array($status, $order->status->transitions(), true);
+
+        if (! $allowed) {
             throw new CrmRuleException('No se puede cambiar de '.$order->status->label().' a '.$status->label().'.');
         }
 

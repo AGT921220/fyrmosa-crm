@@ -5,12 +5,15 @@ declare(strict_types=1);
 namespace Tests\Feature;
 
 use App\Enums\ActivityAction;
+use App\Enums\Permission;
 use App\Enums\QuotationStatus;
 use App\Enums\Role;
 use App\Models\ActivityLog;
 use App\Models\Quotation;
-use App\Models\User;
 use App\Models\QuotationVersion;
+use App\Models\User;
+use Spatie\Permission\Models\Role as RoleModel;
+use Spatie\Permission\PermissionRegistrar;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\CreatesCrmUsers;
 use Tests\TestCase;
@@ -169,6 +172,109 @@ class QuotationTest extends TestCase
             ->put(route('quotations.update', $quotation), $this->quotationPayload($sales))
             ->assertSessionHas('error');
         $this->assertSame('80.00', $quotation->fresh()->total);
+    }
+
+    public function test_override_status_permission_can_move_a_quotation_to_any_status(): void
+    {
+        $sales = $this->userWithRole(Role::Vendedor);
+        $admin = $this->userWithRole(Role::Admin);
+        $billing = $this->userWithRole(Role::Facturacion);
+        $billing->givePermissionTo(Permission::QuotationsOverrideStatus->value);
+
+        $this->actingAs($sales)->post(route('quotations.store'), $this->quotationPayload($sales))->assertRedirect();
+        $quotation = Quotation::query()->firstOrFail();
+
+        $this->actingAs($sales)
+            ->from(route('quotations.show', $quotation))
+            ->post(route('quotations.status', $quotation), ['status' => 'ganada'])
+            ->assertRedirect()
+            ->assertSessionHas('error');
+        $this->assertSame(QuotationStatus::Requested, $quotation->fresh()->status);
+
+        $this->actingAs($admin)
+            ->get(route('quotations.show', $quotation))
+            ->assertOk()
+            ->assertSee('value="ganada"', false)
+            ->assertSee('value="perdida"', false);
+
+        $this->actingAs($admin)
+            ->post(route('quotations.status', $quotation), ['status' => 'ganada'])
+            ->assertRedirect()
+            ->assertSessionHas('success');
+        $this->assertSame(QuotationStatus::Won, $quotation->fresh()->status);
+        $this->assertTrue(QuotationVersion::query()->where('quotation_id', $quotation->id)->exists());
+
+        $this->actingAs($sales)
+            ->get(route('quotations.show', $quotation))
+            ->assertOk()
+            ->assertDontSee('Cambiar estado');
+
+        $this->actingAs($sales)
+            ->from(route('quotations.show', $quotation))
+            ->post(route('quotations.status', $quotation), ['status' => 'solicitada'])
+            ->assertRedirect()
+            ->assertSessionHas('error');
+        $this->assertSame(QuotationStatus::Won, $quotation->fresh()->status);
+
+        $this->actingAs($billing)
+            ->post(route('quotations.status', $quotation), ['status' => 'solicitada'])
+            ->assertRedirect()
+            ->assertSessionHas('success');
+        $this->assertSame(QuotationStatus::Requested, $quotation->fresh()->status);
+
+        $this->actingAs($admin)
+            ->from(route('quotations.show', $quotation))
+            ->post(route('quotations.status', $quotation), ['status' => 'perdida'])
+            ->assertRedirect()
+            ->assertSessionHasErrors('comment');
+
+        $this->actingAs($admin)
+            ->post(route('quotations.status', $quotation), [
+                'status' => 'perdida',
+                'comment' => 'Se cierra por decisión comercial',
+            ])
+            ->assertRedirect()
+            ->assertSessionHas('success');
+
+        $this->actingAs($admin)
+            ->post(route('quotations.status', $quotation), ['status' => 'cotizada'])
+            ->assertRedirect()
+            ->assertSessionHas('success');
+        $this->assertSame(QuotationStatus::Quoted, $quotation->fresh()->status);
+    }
+
+    public function test_admin_without_override_permission_cannot_leave_the_status_graph(): void
+    {
+        $admin = $this->userWithRole(Role::Admin);
+        RoleModel::findByName(Role::Admin->value)->revokePermissionTo(Permission::QuotationsOverrideStatus->value);
+        app(PermissionRegistrar::class)->forgetCachedPermissions();
+
+        $this->actingAs($admin)->post(route('quotations.store'), $this->quotationPayload($admin))->assertRedirect();
+        $quotation = Quotation::query()->firstOrFail();
+        $this->actingAs($admin)->post(route('quotations.status', $quotation), ['status' => 'cotizada'])->assertRedirect();
+        $this->actingAs($admin)->post(route('quotations.status', $quotation), ['status' => 'ganada'])->assertRedirect();
+
+        $this->actingAs($admin)
+            ->get(route('quotations.show', $quotation))
+            ->assertOk()
+            ->assertDontSee('Cambiar estado');
+
+        $this->actingAs($admin)
+            ->from(route('quotations.show', $quotation))
+            ->post(route('quotations.status', $quotation), ['status' => 'solicitada'])
+            ->assertRedirect()
+            ->assertSessionHas('error');
+        $this->assertSame(QuotationStatus::Won, $quotation->fresh()->status);
+
+        \Spatie\Permission\Models\Permission::query()
+            ->where('name', Permission::QuotationsOverrideStatus->value)
+            ->delete();
+        app(PermissionRegistrar::class)->forgetCachedPermissions();
+
+        $this->actingAs($admin->fresh())
+            ->get(route('quotations.show', $quotation))
+            ->assertOk()
+            ->assertDontSee('Cambiar estado');
     }
 
     public function test_lost_requires_a_reason(): void

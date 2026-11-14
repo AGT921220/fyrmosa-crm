@@ -67,13 +67,13 @@
                 @if ($quotation->order)
                     <div class="mt-3">Pedido relacionado: <a href="{{ route('orders.show', $quotation->order) }}">{{ $quotation->order->folio }}</a></div>
                 @endif
-                @if ($quotation->status->transitions() !== [])
+                @if ($statusChoices !== [])
                     @can('changeStatus', $quotation)
                     <form class="row g-2 mt-3" method="POST" action="{{ route('quotations.status', $quotation) }}">
                         @csrf
                         <div class="col-md-4">
                             <select class="form-select" name="status" required>
-                                @foreach ($quotation->status->transitions() as $status)
+                                @foreach ($statusChoices as $status)
                                     <option value="{{ $status->value }}">{{ $status->label() }}</option>
                                 @endforeach
                             </select>

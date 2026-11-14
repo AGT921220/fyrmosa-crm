@@ -29,9 +29,9 @@ Zona horaria: `America/Mexico_City`. Idioma: español.
 
 ## Estados
 
-Cotización: solicitada, cotizada, en negociación, rechazada, ganada, perdida. Rechazada y perdida requieren motivo.
+Cotización: solicitada, cotizada, en negociación, rechazada, ganada, perdida. Rechazada y perdida requieren motivo. Sin `quotations.override_status` solo valen las transiciones del enum; con ese permiso se puede pasar a cualquier otro estado.
 
-Pedido: borrador, pendiente de confirmación, confirmada, en proceso, parcialmente entregada, completada, cancelada.
+Pedido: borrador, pendiente de confirmación, confirmada, en proceso, parcialmente entregada, completada, cancelada. Sin `orders.override_status` solo valen las transiciones del enum; con ese permiso se puede pasar a cualquier otro estado. Cancelar exige motivo.
 
 ## Relaciones
 
@@ -82,11 +82,11 @@ tests/Unit/MoneyTest.php
 | Rol | Alcance |
 | --- | --- |
 | superadmin | Todas las acciones, usuarios y roles. Pasa cualquier permiso |
-| admin | Todas las acciones de negocio. No administra usuarios ni roles |
-| vendedor | Clientes, cotizaciones y alta de pedidos |
+| admin | Todas las acciones de negocio, incluido `quotations.override_status` para cambiar el estado de una cotización en cualquier momento. No administra usuarios ni roles |
+| vendedor | Clientes, cotizaciones (estado solo por las transiciones permitidas) y alta de pedidos |
 | facturacion | Ver clientes y cotizaciones. Operar pedidos, entregas y su seguimiento |
 
-El panel `/users` y `/roles` asigna el rol y permisos directos. `users.role` guarda el rol principal, también si se creó en el panel. `PermissionSeeder` restaura los cuatro roles de sistema y no borra los demás. El acceso local del dueño es el nickname `superadmin`, con la misma contraseña que `admin`. `php artisan initial_setup` restaura permisos/roles y crea solo ese dueño (sin `admin`); el seeder completo también crea `admin`. No reescribe una contraseña ya guardada. Ese usuario no aparece en `/users` y nadie puede editarlo ni eliminarlo.
+El panel `/users` y `/roles` asigna el rol y permisos directos. `users.role` guarda el rol principal, también si se creó en el panel. `php artisan permissions:refresh` ejecuta `PermissionSeeder`: restaura los cuatro roles de sistema y no borra los demás. El acceso local del dueño es el nickname `superadmin`, con la misma contraseña que `admin`. `php artisan initial_setup` restaura permisos/roles y crea solo ese dueño (sin `admin`); el seeder completo también crea `admin`. No reescribe una contraseña ya guardada. Ese usuario no aparece en `/users` y nadie puede editarlo ni eliminarlo.
 
 ## Glosario
 

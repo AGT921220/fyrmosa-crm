@@ -17,6 +17,7 @@ enum Permission: string
     case QuotationsCreate = 'quotations.create';
     case QuotationsUpdate = 'quotations.update';
     case QuotationsChangeStatus = 'quotations.change_status';
+    case QuotationsOverrideStatus = 'quotations.override_status';
     case QuotationsDelete = 'quotations.delete';
     case QuotationsHistory = 'quotations.history';
     case QuotationsFollowUp = 'quotations.follow_up';
@@ -31,6 +32,7 @@ enum Permission: string
     case OrdersUpdate = 'orders.update';
     case OrdersConfirm = 'orders.confirm';
     case OrdersCancel = 'orders.cancel';
+    case OrdersOverrideStatus = 'orders.override_status';
     case OrdersDeliver = 'orders.deliver';
     case OrdersFollowUp = 'orders.follow_up';
     case OrdersDelete = 'orders.delete';
@@ -58,6 +60,7 @@ enum Permission: string
             self::QuotationsCreate => 'Crear cotizaciones',
             self::QuotationsUpdate => 'Editar cotizaciones',
             self::QuotationsChangeStatus => 'Cambiar estado de cotizaciones',
+            self::QuotationsOverrideStatus => 'Cambiar estado de cotizaciones en cualquier momento',
             self::QuotationsDelete => 'Eliminar cotizaciones',
             self::QuotationsHistory => 'Ver histórico de cotizaciones',
             self::QuotationsFollowUp => 'Registrar seguimientos de cotizaciones',
@@ -71,6 +74,7 @@ enum Permission: string
             self::OrdersUpdate => 'Editar pedidos',
             self::OrdersConfirm => 'Confirmar y avanzar pedidos',
             self::OrdersCancel => 'Cancelar pedidos',
+            self::OrdersOverrideStatus => 'Cambiar estado de pedidos en cualquier momento',
             self::OrdersDeliver => 'Registrar entregas',
             self::OrdersFollowUp => 'Registrar seguimientos de pedidos',
             self::OrdersDelete => 'Eliminar pedidos',

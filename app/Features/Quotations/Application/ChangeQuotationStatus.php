@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Features\Quotations\Application;
 
 use App\Enums\ActivityAction;
+use App\Enums\Permission;
 use App\Enums\QuotationStatus;
 use App\Exceptions\CrmRuleException;
 use App\Features\Shared\Application\RecordActivity;
@@ -21,7 +22,14 @@ final class ChangeQuotationStatus
 
     public function __invoke(Quotation $quotation, QuotationStatus $status, User $user, ?string $comment = null): Quotation
     {
-        if (! in_array($status, $quotation->status->transitions(), true)) {
+        if ($status === $quotation->status) {
+            throw new CrmRuleException('La cotización ya está '.$status->label().'.');
+        }
+
+        $allowed = $user->hasPermission(Permission::QuotationsOverrideStatus)
+            || in_array($status, $quotation->status->transitions(), true);
+
+        if (! $allowed) {
             throw new CrmRuleException('No se puede cambiar de '.$quotation->status->label().' a '.$status->label().'.');
         }
 

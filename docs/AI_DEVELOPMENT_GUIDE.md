@@ -12,10 +12,11 @@ Recetas de este repositorio. Las clases citadas son las de referencia.
 
 ## Estado
 
-1. `ChangeQuotationStatusRequest` elige el permiso según el estado destino.
-2. `ChangeQuotationStatus` rechaza transiciones fuera de `QuotationStatus::transitions()`.
-3. Rechazo y cancelación exigen comentario.
-4. Aprobar guarda instantánea con `SnapshotQuotation`.
+1. `ChangeQuotationStatusRequest` autoriza `changeStatus`: `quotations.change_status` o `quotations.override_status`.
+2. `ChangeQuotationStatus` rechaza destinos fuera de `QuotationStatus::transitions()`, salvo que el usuario tenga `quotations.override_status`.
+3. Rechazo y pérdida exigen comentario. El permiso libre no quita esa exigencia.
+4. Pasar a ganada guarda instantánea con `SnapshotQuotation`.
+5. La ficha usa `statusChoices`: transiciones normales, o cualquier otro estado si `overrideStatus` pasa. Admin lo trae por `RolePermissions`; vendedor no.
 
 ## Versión
 
@@ -38,14 +39,15 @@ Recetas de este repositorio. Las clases citadas son las de referencia.
 ## Pedido y entrega
 
 1. Alta directa: `CreateOrder` (borrador).
-2. Estado: `ChangeOrderStatus`.
-3. Entrega: `RegisterDelivery`. Compara la cantidad contra `quantity - quantity_delivered`.
-4. Referencia de prueba: `tests/Feature/OrderTest.php`.
+2. Estado: `ChangeOrderStatus`. Sin `orders.override_status` solo valen `OrderStatus::transitions()` y el permiso del destino (`orders.update`, `orders.confirm` u `orders.cancel`). Con ese permiso se puede pasar a cualquier otro estado. Cancelar exige motivo. Completar exige que no queden cantidades pendientes.
+3. La ficha usa `statusChoices`, igual que la cotización.
+4. Entrega: `RegisterDelivery`. Compara la cantidad contra `quantity - quantity_delivered`.
+5. Referencia de prueba: `tests/Feature/OrderTest.php`.
 
 ## Permiso nuevo
 
 1. Caso en `App\Enums\Permission`, con `label()` y grupo.
-2. Fila en `RolePermissions` para los roles de sistema que deban traerlo, y `php artisan db:seed --class=PermissionSeeder`.
+2. Fila en `RolePermissions` para los roles de sistema que deban traerlo, y `php artisan permissions:refresh`.
 3. Método en la policy o `authorize()` del FormRequest. El controlador no decide el permiso por su cuenta si ya lo cubre el request.
 4. El panel de superadmin lista el enum; no inventes un permiso que ninguna acción consulte.
 5. Actualiza `.cursor/rules/04-permissions.mdc` si el mapa cambió.

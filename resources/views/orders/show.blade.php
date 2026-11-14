@@ -51,13 +51,13 @@
                         <div class="col-12 text-secondary">Convertida el {{ $order->converted_at->format('d/m/Y H:i') }} por {{ $order->converter->name ?? 'Sistema' }}.</div>
                     @endif
                 </div>
-                @if ($order->status->transitions() !== [])
+                @if ($statusChoices !== [])
                     @can('changeStatus', $order)
                     <form class="row g-2 mt-3" method="POST" action="{{ route('orders.status', $order) }}">
                         @csrf
                         <div class="col-md-4">
                             <select class="form-select" name="status" required>
-                                @foreach ($order->status->transitions() as $status)
+                                @foreach ($statusChoices as $status)
                                     <option value="{{ $status->value }}">{{ $status->label() }}</option>
                                 @endforeach
                             </select>

@@ -23,6 +23,10 @@ class ChangeOrderStatusRequest extends FormRequest
         $status = OrderStatus::tryFrom((string) $this->input('status'));
         $user = $this->user();
 
+        if ($user->hasPermission(Permission::OrdersOverrideStatus)) {
+            return true;
+        }
+
         if ($status === OrderStatus::Cancelled) {
             return $user->hasPermission(Permission::OrdersCancel);
         }

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\Feature;
 
 use App\Enums\OrderStatus;
+use App\Enums\Permission;
 use App\Enums\Role;
 use App\Models\Order;
 use App\Models\OrderItem;
@@ -129,5 +130,68 @@ class OrderTest extends TestCase
             ->viewData('users');
 
         $this->assertFalse($users->contains(fn (User $user): bool => $user->id === $owner->id));
+    }
+
+    public function test_override_status_permission_can_move_an_order_to_any_status(): void
+    {
+        $operations = $this->userWithRole(Role::Facturacion);
+        $sales = $this->userWithRole(Role::Vendedor);
+        $sales->givePermissionTo(Permission::OrdersOverrideStatus->value);
+
+        $this->actingAs($operations)->post(route('orders.store'), $this->orderPayload($operations))->assertRedirect();
+        $order = Order::query()->firstOrFail();
+
+        $this->actingAs($operations)
+            ->from(route('orders.show', $order))
+            ->post(route('orders.status', $order), ['status' => OrderStatus::Completed->value])
+            ->assertRedirect()
+            ->assertSessionHas('error');
+        $this->assertSame(OrderStatus::Draft, $order->fresh()->status);
+
+        $this->actingAs($operations)
+            ->post(route('orders.status', $order), [
+                'status' => OrderStatus::Cancelled->value,
+                'comment' => 'El cliente canceló',
+            ])
+            ->assertRedirect()
+            ->assertSessionHas('success');
+
+        $this->actingAs($operations)
+            ->get(route('orders.show', $order))
+            ->assertOk()
+            ->assertDontSee('Cambiar estado');
+
+        $this->actingAs($operations)
+            ->from(route('orders.show', $order))
+            ->post(route('orders.status', $order), ['status' => OrderStatus::Draft->value])
+            ->assertRedirect()
+            ->assertSessionHas('error');
+        $this->assertSame(OrderStatus::Cancelled, $order->fresh()->status);
+
+        $this->actingAs($sales)
+            ->get(route('orders.show', $order))
+            ->assertOk()
+            ->assertSee('value="borrador"', false)
+            ->assertSee('value="confirmada"', false);
+
+        $this->actingAs($sales)
+            ->post(route('orders.status', $order), ['status' => OrderStatus::Draft->value])
+            ->assertRedirect()
+            ->assertSessionHas('success');
+        $this->assertSame(OrderStatus::Draft, $order->fresh()->status);
+
+        $this->actingAs($sales)
+            ->from(route('orders.show', $order))
+            ->post(route('orders.status', $order), ['status' => OrderStatus::Completed->value])
+            ->assertRedirect()
+            ->assertSessionHas('error');
+        $this->assertSame(OrderStatus::Draft, $order->fresh()->status);
+
+        $this->actingAs($sales)
+            ->from(route('orders.show', $order))
+            ->post(route('orders.status', $order), ['status' => OrderStatus::Cancelled->value])
+            ->assertRedirect()
+            ->assertSessionHasErrors('comment');
+        $this->assertSame(OrderStatus::Draft, $order->fresh()->status);
     }
 }

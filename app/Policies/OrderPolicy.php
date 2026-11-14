@@ -54,7 +54,13 @@ class OrderPolicy
     {
         return $user->hasPermission(Permission::OrdersUpdate)
             || $user->hasPermission(Permission::OrdersConfirm)
-            || $user->hasPermission(Permission::OrdersCancel);
+            || $user->hasPermission(Permission::OrdersCancel)
+            || $user->hasPermission(Permission::OrdersOverrideStatus);
+    }
+
+    public function overrideStatus(User $user, Order $order): bool
+    {
+        return $user->hasPermission(Permission::OrdersOverrideStatus);
     }
 
     public function delete(User $user, Order $order): bool

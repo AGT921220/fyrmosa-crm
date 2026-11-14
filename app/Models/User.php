@@ -83,7 +83,7 @@ class User extends Authenticatable
             return true;
         }
 
-        return $this->hasPermissionTo($permission->value);
+        return $this->checkPermissionTo($permission->value);
     }
 
     public function roleLabel(): string

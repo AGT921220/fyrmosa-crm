@@ -76,9 +76,12 @@ class OrderController extends Controller
             'attachments.user',
         ]);
 
+        $unrestricted = request()->user()?->can('overrideStatus', $order) ?? false;
+
         return view('orders.show', [
             'order' => $order,
             'users' => User::query()->withoutOwner()->orderBy('name')->get(['id', 'name']),
+            'statusChoices' => $order->status->destinations($unrestricted),
         ]);
     }
 

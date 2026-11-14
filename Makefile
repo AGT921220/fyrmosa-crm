@@ -39,11 +39,12 @@ demo/restart-data:
 
 import-db:
 	@docker exec -i ${DB_HOST} mysql -u user -ppassword -e "DROP DATABASE IF EXISTS ${DB_DATABASE}; CREATE DATABASE ${DB_DATABASE};"
-	@docker exec -i ${DB_HOST} mysql -u user -ppassword ${DB_DATABASE} < storage/app/rpbi.sql
+	@docker exec -i ${DB_HOST} mysql -u user -ppassword ${DB_DATABASE} < storage/app/app_production.sql
+	@docker exec -i php-fyrmosa php artisan permission:cache-reset
 	@$(MAKE) update-bulk-passwords
 
 db-export:
 	@docker exec -i ${DB_HOST} mysqldump -u ${DB_USERNAME} -p${DB_PASSWORD} --no-tablespaces ${DB_DATABASE} > storage/app/gan.sql
 
 update-bulk-passwords:
-	@docker exec -i php-fyrmosa php artisan users:update-bulk-passwords --force
+	@docker exec -i php-fyrmosa php artisan update-bulk-passwords

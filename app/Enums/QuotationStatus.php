@@ -81,4 +81,19 @@ enum QuotationStatus: string
             self::Rejected, self::Won, self::Lost => [],
         };
     }
+
+    /**
+     * @return list<self>
+     */
+    public function destinations(bool $unrestricted): array
+    {
+        if (! $unrestricted) {
+            return $this->transitions();
+        }
+
+        return array_values(array_filter(
+            self::cases(),
+            fn (self $status): bool => $status !== $this,
+        ));
+    }
 }

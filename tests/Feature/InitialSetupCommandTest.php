@@ -56,4 +56,40 @@ class InitialSetupCommandTest extends TestCase
         $this->assertDatabaseMissing('users', ['nickname' => 'admin']);
         $this->assertSame(1, User::query()->count());
     }
+
+    public function test_permissions_refresh_syncs_system_roles_and_keeps_custom_ones(): void
+    {
+        $this->artisan('permissions:refresh')->assertSuccessful();
+
+        PermissionModel::query()->create([
+            'name' => 'obsolete.permission',
+            'guard_name' => 'web',
+        ]);
+
+        $admin = RoleModel::findByName(Role::Admin->value);
+        $admin->revokePermissionTo(Permission::QuotationsOverrideStatus->value);
+
+        $custom = RoleModel::query()->create([
+            'name' => 'supervisor',
+            'guard_name' => 'web',
+        ]);
+        $custom->givePermissionTo(Permission::ClientsView->value);
+
+        $this->artisan('permissions:refresh')
+            ->expectsOutputToContain('Permisos restaurados: '.count(Permission::cases()))
+            ->expectsOutputToContain('Roles de sistema restaurados: '.count(Role::cases()))
+            ->assertSuccessful();
+
+        $this->assertDatabaseMissing('permissions', ['name' => 'obsolete.permission']);
+        $this->assertTrue(
+            RoleModel::findByName(Role::Admin->value)->hasPermissionTo(Permission::QuotationsOverrideStatus->value),
+        );
+        $this->assertFalse(
+            RoleModel::findByName(Role::Vendedor->value)->hasPermissionTo(Permission::QuotationsOverrideStatus->value),
+        );
+        $this->assertTrue(
+            RoleModel::findByName('supervisor')->hasPermissionTo(Permission::ClientsView->value),
+        );
+        $this->assertSame(0, User::query()->count());
+    }
 }

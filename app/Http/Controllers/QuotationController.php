@@ -68,11 +68,14 @@ class QuotationController extends Controller
         $quotation->load(['items', 'user', 'client', 'followUps.user', 'activities.user', 'attachments.user', 'order']);
         $chain = $quotation->chain()->with(['order', 'versions.user'])->orderBy('version_number')->get();
 
+        $unrestricted = request()->user()?->can('overrideStatus', $quotation) ?? false;
+
         return view('quotations.show', [
             'quotation' => $quotation,
             'chain' => $chain,
             'hasOrder' => $chain->contains(fn (Quotation $item) => $item->order !== null),
             'users' => User::query()->withoutOwner()->orderBy('name')->get(['id', 'name']),
+            'statusChoices' => $quotation->status->destinations($unrestricted),
         ]);
     }
 
