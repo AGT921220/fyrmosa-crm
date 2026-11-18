@@ -6,6 +6,7 @@ namespace App\Models;
 
 use App\Enums\Currency;
 use App\Enums\QuotationStatus;
+use App\Support\FilterValues;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -146,10 +147,10 @@ class Quotation extends Model
             });
         });
 
-        $query->when($filters['status'] ?? null, fn (Builder $query, string $status) => $query->where('status', $status));
+        $query->when(FilterValues::list($filters['status'] ?? null), fn (Builder $query, array $statuses) => $query->whereIn('status', $statuses));
         $query->when($filters['currency'] ?? null, fn (Builder $query, string $currency) => $query->where('currency', $currency));
-        $query->when($filters['client_id'] ?? null, fn (Builder $query, string $clientId) => $query->where('client_id', $clientId));
-        $query->when($filters['user_id'] ?? null, fn (Builder $query, string $userId) => $query->where('user_id', $userId));
+        $query->when(FilterValues::ids($filters['client_id'] ?? null), fn (Builder $query, array $clientIds) => $query->whereIn('client_id', $clientIds));
+        $query->when(FilterValues::ids($filters['user_id'] ?? null), fn (Builder $query, array $userIds) => $query->whereIn('user_id', $userIds));
         $query->when($filters['date_from'] ?? null, fn (Builder $query, string $date) => $query->whereDate('issued_on', '>=', $date));
         $query->when($filters['date_to'] ?? null, fn (Builder $query, string $date) => $query->whereDate('issued_on', '<=', $date));
 

@@ -143,6 +143,7 @@
             height: auto;
         }
     </style>
+    @stack('styles')
 </head>
 <body>
     @auth

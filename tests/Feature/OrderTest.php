@@ -194,4 +194,61 @@ class OrderTest extends TestCase
             ->assertSessionHasErrors('comment');
         $this->assertSame(OrderStatus::Draft, $order->fresh()->status);
     }
+
+    public function test_index_filters_by_several_statuses_clients_and_owners(): void
+    {
+        $operations = $this->userWithRole(Role::Facturacion);
+        $other = User::factory()->create(['name' => 'Otro Responsable']);
+
+        $this->actingAs($operations)->post(route('orders.store'), $this->orderPayload($operations))->assertRedirect();
+        $this->actingAs($operations)->post(route('orders.store'), $this->orderPayload($operations, [
+            'user_id' => $other->id,
+        ]))->assertRedirect();
+
+        $first = Order::query()->where('folio', 'PED-000001')->firstOrFail();
+        $second = Order::query()->where('folio', 'PED-000002')->firstOrFail();
+        $second->update(['status' => OrderStatus::Confirmed]);
+
+        $this->actingAs($operations)
+            ->get(route('orders.index', [
+                'status' => [OrderStatus::Draft->value, OrderStatus::Confirmed->value],
+            ]))
+            ->assertOk()
+            ->assertSee('PED-000001')
+            ->assertSee('PED-000002')
+            ->assertSee('name="status[]"', false)
+            ->assertSee('name="client_id[]"', false)
+            ->assertSee('name="user_id[]"', false);
+
+        $this->actingAs($operations)
+            ->get(route('orders.index', ['status' => OrderStatus::Confirmed->value]))
+            ->assertOk()
+            ->assertDontSee('PED-000001')
+            ->assertSee('PED-000002');
+
+        $this->actingAs($operations)
+            ->get(route('orders.index', ['status' => 'all']))
+            ->assertOk()
+            ->assertSee('PED-000001')
+            ->assertSee('PED-000002')
+            ->assertSee('Todos');
+
+        $this->actingAs($operations)
+            ->get(route('orders.index', ['client_id' => [$first->client_id]]))
+            ->assertOk()
+            ->assertSee('PED-000001')
+            ->assertDontSee('PED-000002');
+
+        $this->actingAs($operations)
+            ->get(route('orders.index', ['user_id' => [$operations->id, $other->id]]))
+            ->assertOk()
+            ->assertSee('PED-000001')
+            ->assertSee('PED-000002');
+
+        $this->actingAs($operations)
+            ->get(route('orders.index', ['user_id' => [$other->id]]))
+            ->assertOk()
+            ->assertDontSee('PED-000001')
+            ->assertSee('PED-000002');
+    }
 }

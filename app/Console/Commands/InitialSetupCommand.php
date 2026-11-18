@@ -24,7 +24,7 @@ class InitialSetupCommand extends Command
         $this->info('Roles de sistema restaurados: '.count(Role::cases()));
 
         $created = $this->ensureSuperAdmin();
-
+        
         if ($created) {
             $this->info('Usuario dueño creado: nickname=superadmin (password inicial: admin)');
 

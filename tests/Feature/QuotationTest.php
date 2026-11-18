@@ -376,6 +376,70 @@ class QuotationTest extends TestCase
         ]);
     }
 
+    public function test_index_filters_by_several_statuses_clients_and_owners(): void
+    {
+        $sales = $this->userWithRole(Role::Vendedor);
+        $other = User::factory()->create(['name' => 'Otro Vendedor']);
+
+        $this->actingAs($sales)->post(route('quotations.store'), $this->quotationPayload($sales))->assertRedirect();
+        $this->actingAs($other)->post(route('quotations.store'), $this->quotationPayload($other))->assertRedirect();
+
+        $first = Quotation::query()->where('folio', 'COT-000001')->firstOrFail();
+        $second = Quotation::query()->where('folio', 'COT-000002')->firstOrFail();
+        $second->update(['status' => QuotationStatus::Quoted]);
+
+        $this->actingAs($sales)
+            ->get(route('quotations.index', [
+                'status' => [QuotationStatus::Requested->value, QuotationStatus::Quoted->value],
+            ]))
+            ->assertOk()
+            ->assertSee('COT-000001')
+            ->assertSee('COT-000002')
+            ->assertSee('name="status[]"', false)
+            ->assertSee('status%5B0%5D=solicitada', false)
+            ->assertSee('status%5B1%5D=cotizada', false);
+
+        $this->actingAs($sales)
+            ->get(route('quotations.index', ['status' => QuotationStatus::Quoted->value]))
+            ->assertOk()
+            ->assertDontSee('COT-000001')
+            ->assertSee('COT-000002');
+
+        $this->actingAs($sales)
+            ->get(route('quotations.index', ['status' => 'all']))
+            ->assertOk()
+            ->assertSee('COT-000001')
+            ->assertSee('COT-000002')
+            ->assertSee('Todos');
+
+        $this->actingAs($sales)
+            ->get(route('quotations.index', ['client_id' => [$first->client_id, $second->client_id]]))
+            ->assertOk()
+            ->assertSee('COT-000001')
+            ->assertSee('COT-000002');
+
+        $this->actingAs($sales)
+            ->get(route('quotations.index', ['client_id' => [$first->client_id]]))
+            ->assertOk()
+            ->assertSee('COT-000001')
+            ->assertDontSee('COT-000002');
+
+        $this->actingAs($sales)
+            ->get(route('quotations.index', ['user_id' => [$sales->id, $other->id]]))
+            ->assertOk()
+            ->assertSee('COT-000001')
+            ->assertSee('COT-000002');
+
+        $this->actingAs($sales)
+            ->get(route('quotations.index', [
+                'user_id' => [$other->id],
+                'status' => [QuotationStatus::Requested->value, QuotationStatus::Quoted->value],
+            ]))
+            ->assertOk()
+            ->assertDontSee('COT-000001')
+            ->assertSee('COT-000002');
+    }
+
     public function test_sales_can_download_the_pdf(): void
     {
         $sales = $this->userWithRole(Role::Vendedor);

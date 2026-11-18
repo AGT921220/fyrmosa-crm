@@ -17,50 +17,61 @@
     @endphp
     <form class="card mb-3" method="GET">
         <div class="card-body">
-            <div class="row g-2">
-                <div class="col-md-3"><input class="form-control" name="q" value="{{ $filters['q'] ?? '' }}" placeholder="Folio, cliente o correo"></div>
-                <div class="col-md-2">
-                    <select class="form-select" name="status">
-                        <option value="">Estado</option>
-                        @foreach ($statuses as $status)
-                            <option value="{{ $status->value }}" @selected(($filters['status'] ?? '') === $status->value)>{{ $status->label() }}</option>
-                        @endforeach
-                    </select>
+            <div class="row g-2 align-items-start">
+                <div class="col-md-3">
+                    <label class="form-label mb-1">Buscar</label>
+                    <input class="form-control" name="q" value="{{ $filters['q'] ?? '' }}" placeholder="Folio, cliente o correo">
                 </div>
+                @include('partials.multi-filter', [
+                    'name' => 'status',
+                    'label' => 'Estado',
+                    'col' => 2,
+                    'selected' => $filters['status'] ?? [],
+                    'options' => array_map(fn ($status) => ['value' => $status->value, 'label' => $status->label()], $statuses),
+                ])
                 <div class="col-md-2">
+                    <label class="form-label mb-1">Moneda</label>
                     <select class="form-select" name="currency">
-                        <option value="">Moneda</option>
+                        <option value="">Todas</option>
                         @foreach ($currencies as $currency)
                             <option value="{{ $currency->value }}" @selected(($filters['currency'] ?? '') === $currency->value)>{{ $currency->label() }}</option>
                         @endforeach
                     </select>
                 </div>
+                @include('partials.multi-filter', [
+                    'name' => 'client_id',
+                    'label' => 'Cliente',
+                    'col' => 2,
+                    'selected' => $filters['client_id'] ?? [],
+                    'options' => $clients->map(fn ($client) => ['value' => (string) $client->id, 'label' => $client->name])->all(),
+                ])
+                @include('partials.multi-filter', [
+                    'name' => 'user_id',
+                    'label' => 'Responsable',
+                    'col' => 3,
+                    'selected' => $filters['user_id'] ?? [],
+                    'options' => $users->map(fn ($user) => ['value' => (string) $user->id, 'label' => $user->name])->all(),
+                ])
                 <div class="col-md-2">
-                    <select class="form-select" name="client_id">
-                        <option value="">Cliente</option>
-                        @foreach ($clients as $client)
-                            <option value="{{ $client->id }}" @selected(($filters['client_id'] ?? '') == $client->id)>{{ $client->name }}</option>
-                        @endforeach
-                    </select>
+                    <label class="form-label mb-1">Desde</label>
+                    <input class="form-control" type="date" name="date_from" value="{{ $filters['date_from'] ?? '' }}">
                 </div>
-                <div class="col-md-3">
-                    <select class="form-select" name="user_id">
-                        <option value="">Responsable</option>
-                        @foreach ($users as $user)
-                            <option value="{{ $user->id }}" @selected(($filters['user_id'] ?? '') == $user->id)>{{ $user->name }}</option>
-                        @endforeach
-                    </select>
-                </div>
-                <div class="col-md-2"><input class="form-control" type="date" name="date_from" value="{{ $filters['date_from'] ?? '' }}"></div>
-                <div class="col-md-2"><input class="form-control" type="date" name="date_to" value="{{ $filters['date_to'] ?? '' }}"></div>
                 <div class="col-md-2">
+                    <label class="form-label mb-1">Hasta</label>
+                    <input class="form-control" type="date" name="date_to" value="{{ $filters['date_to'] ?? '' }}">
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label mb-1">Seguimiento</label>
                     <select class="form-select" name="follow_up">
-                        <option value="">Seguimiento</option>
+                        <option value="">Todos</option>
                         <option value="pending" @selected(($filters['follow_up'] ?? '') === 'pending')>Pendientes</option>
                         <option value="overdue" @selected(($filters['follow_up'] ?? '') === 'overdue')>Vencidos</option>
                     </select>
                 </div>
-                <div class="col-md-2"><button class="btn btn-primary w-100" type="submit">Filtrar</button></div>
+                <div class="col-md-2 d-grid">
+                    <label class="form-label mb-1">&nbsp;</label>
+                    <button class="btn btn-primary w-100" type="submit">Filtrar</button>
+                </div>
             </div>
         </div>
     </form>
