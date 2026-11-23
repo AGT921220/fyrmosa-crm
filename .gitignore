@@ -35,3 +35,4 @@ auth.json
 .pnp.cjs
 .pnp.loader.mjs
 yarn.lock
+/docker/nginx/logs/

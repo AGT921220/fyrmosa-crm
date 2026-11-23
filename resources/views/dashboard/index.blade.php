@@ -58,6 +58,9 @@
     </div>
 
     @foreach ($metrics['currencies'] as $code => $bucket)
+    {{-- @php
+     dd($metrics);   
+    @endphp --}}
         <h3 class="mb-2">{{ $bucket['label'] }}</h3>
         <div class="row row-cards mb-3">
             @foreach ([

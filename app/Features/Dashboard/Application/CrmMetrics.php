@@ -64,6 +64,7 @@ final class CrmMetrics
             $quotes = $quotationRows->where('currency', $currency->value);
             // dd($quotes->toArray());
             $orders = $orderRows->where('currency', $currency->value);
+            $totalOrders = (int) $quotes->sum('aggregate');
             $wonCount = (int) ($won[$currency->value] ?? 0);
             $convertedCount = (int) ($converted[$currency->value] ?? 0);
 
@@ -94,7 +95,8 @@ final class CrmMetrics
                 'conversion' => [
                     'approved' => $wonCount,
                     'converted' => $convertedCount,
-                    'rate' => $wonCount === 0 ? 0 : round(($convertedCount / $wonCount) * 100, 1),
+                    'total'=> $totalOrders,
+                    'rate' => $wonCount === 0 ? 0 : round(($wonCount / $totalOrders) * 100, 1),
                 ],
             ];
         }
