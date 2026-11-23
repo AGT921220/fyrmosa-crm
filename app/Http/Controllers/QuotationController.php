@@ -48,7 +48,7 @@ class QuotationController extends Controller
         ]);
     }
 
-    public function create(): View
+    public function create()
     {
         $this->authorize('create', Quotation::class);
 

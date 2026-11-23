@@ -31,3 +31,7 @@ docker/nginx/logs
 .env.production
 .phpactor.json
 auth.json
+.yarn
+.pnp.cjs
+.pnp.loader.mjs
+yarn.lock

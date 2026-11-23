@@ -23,13 +23,13 @@ final class CrmMetrics
     {
         $quotationRows = $this->quotations($filters)
             ->toBase()
-            ->selectRaw('currency, status, COUNT(*) as aggregate, SUM(total) as amount')
+            ->selectRaw('currency, status, COUNT(*) as aggregate, SUM(subtotal) as amount')
             ->groupBy('currency', 'status')
             ->get();
 
         $orderRows = $this->orders($filters)
             ->toBase()
-            ->selectRaw('currency, status, COUNT(*) as aggregate, SUM(total) as amount')
+            ->selectRaw('currency, status, COUNT(*) as aggregate, SUM(subtotal) as amount')
             ->groupBy('currency', 'status')
             ->get();
 
@@ -62,6 +62,7 @@ final class CrmMetrics
 
         foreach (Currency::cases() as $currency) {
             $quotes = $quotationRows->where('currency', $currency->value);
+            // dd($quotes->toArray());
             $orders = $orderRows->where('currency', $currency->value);
             $wonCount = (int) ($won[$currency->value] ?? 0);
             $convertedCount = (int) ($converted[$currency->value] ?? 0);

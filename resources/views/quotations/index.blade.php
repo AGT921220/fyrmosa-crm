@@ -84,6 +84,8 @@
                         <th><a href="{{ $sortLink('client_name') }}">Cliente</a></th>
                         <th><a href="{{ $sortLink('issued_on') }}">Fecha</a></th>
                         <th><a href="{{ $sortLink('expires_on') }}">Vencimiento</a></th>
+                        <th><a href="{{ $sortLink('subtotal') }}">Subtotal</a></th>
+
                         <th><a href="{{ $sortLink('total') }}">Total</a></th>
                         <th><a href="{{ $sortLink('status') }}">Estado</a></th>
                         <th>Responsable</th>
@@ -98,6 +100,7 @@
                             <td>{{ $quotation->client_name }}</td>
                             <td>{{ $quotation->issued_on->format('d/m/Y') }}</td>
                             <td>{{ $quotation->expires_on->format('d/m/Y') }}</td>
+                            <td>{{ \App\Support\Money::display($quotation->subtotal, $quotation->currency) }}</td>
                             <td>{{ \App\Support\Money::display($quotation->total, $quotation->currency) }}</td>
                             <td>@include('partials.status-badge', ['status' => $quotation->status])</td>
                             <td>{{ $quotation->user->name }}</td>

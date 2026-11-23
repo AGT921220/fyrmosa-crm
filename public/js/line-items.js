@@ -45,7 +45,7 @@
                     <option value="amount" ${item.discount_type !== 'percent' ? 'selected' : ''}>Importe</option>
                 </select>
             </td>
-            <td><input class="form-control" name="items[${index}][tax_rate]" value="${escape(item.tax_rate ?? '0')}" inputmode="decimal"></td>
+            <td><input class="form-control" name="items[${index}][tax_rate]" value="${escape(item.tax_rate ?? '16')}" inputmode="decimal"></td>
             <td class="line-total text-nowrap">0.00</td>
             <td><button class="btn btn-outline-danger btn-icon" type="button" data-remove><i class="ti ti-trash"></i></button></td>
         `;
