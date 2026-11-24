@@ -15,8 +15,8 @@ class ExpireQuotationsCommand extends Command
 
     public function handle(ExpireQuotations $expire): int
     {
-        $count = $expire();
-        $this->info('Cotizaciones vencidas: '.$count);
+        // $count = $expire();
+        // $this->info('Cotizaciones vencidas: '.$count);
 
         return self::SUCCESS;
     }
